@@ -1,146 +1,55 @@
-# backends/manage.py
-
-# --- FIX: Tambahkan dua baris ini di paling atas ---
-from dotenv import load_dotenv
-load_dotenv()
-# ----------------------------------------------------
-
 import asyncio
 import typer
 import uvicorn
-from typing_extensions import Annotated
+import os
+import pkgutil
+import importlib
 
-# NOTE: File ini berfungsi seperti manage.py di Flask, tapi untuk project FastAPI.
-# Kita menggunakan Typer, library dari developer FastAPI, untuk membuat command CLI.
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
 
-# Inisialisasi Typer, "penerjemah" command line kita
-cli = typer.Typer(
-    help="Manajemen CLI untuk aplikasi WMS FastAPI."
-)
+from app.database import Base, async_engine
 
-# --- Database Commands ---
+cli = typer.Typer(help="CLI for managing the WMS FastAPI application.")
 
 @cli.command()
 def init_db():
     """
-    Inisialisasi database dan membuat semua tabel.
-    Membaca metadata dari semua model yang diimpor.
+    Initializes the database and creates all tables.
+    This command dynamically imports all modules in the app.models package
+    to ensure SQLAlchemy's Base metadata is populated before creating tables.
     """
-    # Import dependency di dalam fungsi agar tidak dieksekusi saat startup
-    from app.database import Base, async_engine
+    typer.echo("Initializing database...")
 
-    # Penting: Impor semua modul yang berisi model SQLAlchemy
-    # agar Base.metadata bisa mendeteksi semua tabel.
-    # Sesuaikan dengan nama file model yang kamu punya.
-    from app.models import (
-        user, warehouse, product, consignment, contract, 
-        customer, shipment, salesorder, picking, packing_slip,
-        helper # Tambahkan semua file modelmu di sini
-    )
+    # Dynamically import all model files
+    models_package = "app.models"
+    package = importlib.import_module(models_package)
+    for _, name, _ in pkgutil.iter_modules(package.__path__):
+        importlib.import_module(f".{name}", package.__name__)
+        typer.echo(f" - Registered models from: {name}")
 
     async def create_tables():
-        """Fungsi async untuk membuat tabel."""
         async with async_engine.begin() as conn:
-            typer.echo("Membuat semua tabel sesuai models...")
+            typer.echo("Dropping all existing tables...")
+            await conn.run_sync(Base.metadata.drop_all)
+            typer.echo("Creating all tables...")
             await conn.run_sync(Base.metadata.create_all)
-        typer.secho("✅ Database berhasil diinisialisasi.", fg=typer.colors.GREEN)
+        typer.secho("✅ Database has been initialized successfully.", fg=typer.colors.GREEN)
 
-    # Menjalankan fungsi async menggunakan asyncio.run()
     asyncio.run(create_tables())
-
-# --- User Management Commands ---
-
-@cli.command()
-def create_admin(
-    username: Annotated[str, typer.Argument(help="Username untuk admin baru.")],
-    email: Annotated[str, typer.Argument(help="Email untuk admin baru (harus unik).")],
-    password: Annotated[str, typer.Argument(help="Password untuk admin baru.")],
-    confirm_password: Annotated[str, typer.Argument(help="Konfirmasi password.")],
-    user_id: Annotated[str, typer.Argument(help="ID unik untuk user.")],
-    first_name: Annotated[str, typer.Argument(help="Nama depan user.")],
-    last_name: Annotated[str, typer.Argument(help="Nama belakang user.")],
-    phone: Annotated[str, typer.Option(help="Nomor telepon user.")] = None,
-    emergency_contact: Annotated[str, typer.Option(help="Kontak darurat user.")] = None,
-    department: Annotated[str, typer.Option(help="Departemen user.")] = None,
-    position: Annotated[str, typer.Option(help="Posisi atau jabatan user.")] = None,
-    timezone: Annotated[str, typer.Option(help="Zona waktu user.")] = 'Asia/Jakarta',
-    language: Annotated[str, typer.Option(help="Bahasa user.")] = 'id',
-    assigned_warehouse_id: Annotated[int, typer.Option(help="ID gudang yang ditugaskan.")] = None,
-):
-    """
-    Membuat user baru dengan role 'admin'.
-    """
-    # Import dependency di dalam fungsi
-    from app.database import get_db_session
-    from app.services.auth.user_service import UserService
-    from app.schemas.user import UserCreateSchema
-    from app.services.exceptions import ValidationError
-    from pydantic import ValidationError as PydanticValidationError
-
-    async def add_admin_user():
-        """Fungsi async untuk menambah admin."""
-        typer.echo(f"Mencoba membuat admin '{username}'...")
-        
-        try:
-            # Validasi schema di awal
-            user_schema = UserCreateSchema(
-                username=username,
-                email=email,
-                password=password,
-                confirm_password=confirm_password,
-                user_id=user_id,
-                first_name=first_name,
-                last_name=last_name,
-                phone=phone,
-                emergency_contact=emergency_contact,
-                role='admin', # Hardcode role sebagai admin
-                department=department,
-                position=position,
-                timezone=timezone,
-                language=language,
-                assigned_warehouse_id=assigned_warehouse_id
-            )
-        except PydanticValidationError as e:
-            typer.secho(f"🔥 Gagal: Error validasi input - {e}", fg=typer.colors.RED)
-            return
-
-        # Kita butuh session database untuk berinteraksi dengan DB
-        async for session in get_db_session():
-            try:
-                user_service = UserService(session)
-                
-                # Panggil service dengan data dari schema (dalam bentuk dict)
-                new_user = await user_service.create(user_schema.model_dump())
-                
-                typer.secho(f"✅ Admin '{new_user.username}' berhasil dibuat!", fg=typer.colors.GREEN)
-            except (ValidationError, PydanticValidationError) as e:
-                typer.secho(f"🔥 Gagal: Validasi error - {e}", fg=typer.colors.RED)
-            except Exception as e:
-                typer.secho(f"🔥 Gagal membuat admin: {e}", fg=typer.colors.RED)
-            finally:
-                # Pastikan session selalu ditutup
-                await session.close()
-    
-    # Menjalankan fungsi async
-    asyncio.run(add_admin_user())
-
-
-# --- Server Commands ---
 
 @cli.command()
 def run(
-    host: str = "127.0.0.1",
-    port: int = 8000,
-    reload: bool = True
+    host: str = typer.Option("127.0.0.1", help="The host to bind the server to."),
+    port: int = typer.Option(8000, help="The port to run the server on."),
+    reload: bool = typer.Option(True, help="Enable auto-reloading for development."),
 ):
     """
-    Menjalankan development server Uvicorn.
-    Ini adalah pengganti 'flask run'.
+    Runs the development server.
     """
-    typer.echo(f"🚀 Menjalankan server di http://{host}:{port}")
-    # Kita menunjuk ke 'app' di dalam file 'main.py'
-    # Pastikan kamu punya file main.py di root backends/
-    uvicorn.run("main:app", host=host, port=port, reload=reload)
+    typer.echo(f"🚀 Starting server on http://{host}:{port}")
+    uvicorn.run("app:create_app", factory=True, host=host, port=port, reload=reload)
 
 
 if __name__ == "__main__":

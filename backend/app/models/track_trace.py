@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import(
     Column, Integer, String, ForeignKey, 
     Text, DateTime, Date, Numeric, Boolean,
-    Float, Func, UniqueConstraint
+    Float, func, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from .base import BaseModel

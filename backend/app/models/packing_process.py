@@ -14,6 +14,8 @@ class PackingOrder(BaseModel):
     status = Column(String(50), default='PENDING', nullable=False)
     customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
     customer = relationship('Customer')
+    sales_order_id = Column(Integer, ForeignKey('sales_order.id'), nullable=False)
+    sales_order = relationship('SalesOrder', back_populates='packing_orders')
     picking_order_id = Column(Integer, ForeignKey('picking_orders.id'), nullable=False)
     picking_order = relationship('PickingOrder', back_populates='packing_orders')
     created_by = Column(String(50))  # Tim packing
