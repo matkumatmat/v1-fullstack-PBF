@@ -26,8 +26,8 @@ class SalesOrder(BaseModel):
     tender_contract_id = Column(Integer, ForeignKey('tender_contracts.id'), nullable=True)
     tender_contract = relationship('TenderContract', back_populates='sales_order')
     
-    packing_slip_id = Column(Integer, ForeignKey('packing_slips.id'), nullable=True)
-    packing_slip = relationship('PackingSlip', back_populates='sales_order')
+    # The relationship to packing will be managed through PackingOrder
+    packing_orders = relationship('PackingOrder', back_populates='sales_order')
     
     is_tender_so = Column(Boolean, default=False)
     

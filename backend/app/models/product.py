@@ -175,12 +175,20 @@ class StockMovement(BaseModel):
     created_by = Column(String(50))
 
 class ProductPrice(BaseModel):
-    code = Column
-    name = Column
-    product = relationship(product.id)
-    effective_date = Column
-    HNA = Column
-    HJP = Column
-    HET = Column
-    created_at = Column
-    updated_at = Column
+    __tablename__ = 'product_prices'
+
+    code = Column(String(50), unique=True, nullable=False, index=True)
+    name = Column(String(100))
+
+    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
+    product = relationship('Product', back_populates='product_price')
+
+    effective_date = Column(Date, nullable=False)
+
+    # Assuming HNA, HJP, HET are prices (Harga)
+    HNA = Column(Numeric(15, 2))  # Harga Netto Apotek
+    HJP = Column(Numeric(15, 2))  # Harga Jual Pabrik
+    HET = Column(Numeric(15, 2))  # Harga Eceran Tertinggi
+
+    def __repr__(self):
+        return f'<ProductPrice {self.code} for {self.product.name}>'
