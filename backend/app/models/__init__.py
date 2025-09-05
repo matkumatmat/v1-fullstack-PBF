@@ -1,11 +1,5 @@
 from .base import BaseModel
-from .user import User
-from .customer import Customer
-from .order_process import SalesOrder, SalesOrderItem
-from .outbound_process import PickingList, PickingListItem
-from .product import Product
-from .shipment import ShipmentDocument
-from .warehouse import Warehouse, Rack, RackAllocation
+from .order_process import SalesOrder, SalesOrderItem, ShippingPlan, ShippingPlanItem
 from .type import (
     ProductType,
     PackageType,

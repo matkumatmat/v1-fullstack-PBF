@@ -32,7 +32,7 @@ class ProductType(BaseModel):
     description = Column(Text)
     sort_order = Column(Integer, default=0)
 
-    products = relationship('Product', back_populates='product_type')
+    #products = relationship('Product', back_populates='product_type')
     def __repr__(self):
         return f'<ProductType {self.code}: {self.name}>'
     
@@ -47,7 +47,7 @@ class PackageType(BaseModel):
     special_handling_required = Column(Boolean, default=False)
     handling_instructions = Column(Text)
 
-    products = relationship('Product', back_populates='package_type')
+    #products = relationship('Product', back_populates='package_type')
     def __repr__(self):
         return f'<PackageType {self.code}: {self.name}>'    
 
@@ -67,8 +67,8 @@ class TemperatureType(BaseModel):
     icon = Column(String(50))  # Icon name untuk UI
     
     # Relationships
-    products = relationship('Product', back_populates='temperature_type')
-    warehouses = relationship('Warehouse', back_populates='temperature_type')
+    #products = relationship('Product', back_populates='temperature_type')
+    #warehouses = relationship('Warehouse', back_populates='temperature_type')
     
     def __repr__(self):
         return f'<TemperatureType {self.code}: {self.name}>'
@@ -82,7 +82,7 @@ class AllocationType(BaseModel):
     color_code = Column(String(7))  # Hex color
     icon = Column(String(50))
 
-    allocations = relationship('Allocation', back_populates='allocation_type')
+    #allocations = relationship('Allocation', back_populates='allocation_type')
     sales_order_items = relationship(
         'SalesOrderItem',
         secondary=sales_order_item_allocation_association,
@@ -107,7 +107,7 @@ class SectorType(BaseModel):
     requires_chain_of_custody = Column(Boolean, default=False)
     special_documentation = Column(Text)
     
-    customers = relationship('Customer', back_populates='sector_type')
+    #customers = relationship('Customer', back_populates='sector_type')
     sales_order_items = relationship(
         'SalesOrderItem',
         secondary=sales_order_item_sector_association,
@@ -129,7 +129,7 @@ class CustomerType(BaseModel):
     default_discount_percent = Column(Numeric(5, 2))
     default_payment_terms_days = Column(Integer, default=30)
     
-    customers = relationship('Customer', back_populates='customer_type')
+    #customers = relationship('Customer', back_populates='customer_type')
     
     def __repr__(self):
         return f'<CustomerType {self.code}: {self.name}>'
@@ -148,7 +148,7 @@ class DocumentType(BaseModel):
 
     auto_generate = Column(Boolean, default=False)
     template_path = Column(String(255))
-    shipment_documents = relationship('ShipmentDocument', back_populates='document_type')
+    #shipment_documents = relationship('ShipmentDocument', back_populates='document_type')
     
     def __repr__(self):
         return f'<DocumentType {self.code}: {self.name}>'
@@ -311,14 +311,14 @@ class ProductPrice(BaseModel):
 
     code = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(100))
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
+    #product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
     effective_date = Column(Date, nullable=False)
     HNA = Column(Numeric(15, 2))
     HJP = Column(Numeric(15, 2))
     HET = Column(Numeric(15, 2))
     
-    product = relationship('Product', back_populates='prices')
-    sales_order_items = relationship('SalesOrderItem', back_populates='product_price_entry')
+    #product = relationship('Product', back_populates='prices')
+    #sales_order_items = relationship('SalesOrderItem', back_populates='product_price_entry')
 
     def __repr__(self):
         return f'<ProductPrice {self.code} for {self.product.name}>'   
@@ -332,7 +332,7 @@ class MovementType(BaseModel):
     auto_generate_document = Column(Boolean, default=False)
     document_prefix = Column(String(10))
 
-    stock_movements = relationship('StockMovement', back_populates='movement_type')
+    #stock_movements = relationship('StockMovement', back_populates='movement_type')
     
     def __repr__(self):
         return f'<MovementType {self.code}: {self.name}>'

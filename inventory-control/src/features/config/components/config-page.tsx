@@ -1,3 +1,5 @@
+// Fixed Config Page with Better Error Handling
+// inventory-control/src/features/config/components/config-page.tsx
 'use client';
 
 import PageContainer from '@/components/layout/page-container';
@@ -9,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { toast } from 'sonner'; // Assuming you're using sonner for toast notifications
 import { ApiClient } from '../api';
 import { ConfigTable } from './config-table';
 import { ConfigFormDialog } from './config-form-dialog';
@@ -41,50 +44,94 @@ const types = [
 ];
 
 export default function ConfigPage() {
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<string>('');
   const [data, setData] = useState<ConfigItem[]>([]);
   const [apiClient, setApiClient] = useState<ApiClient | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    if (!apiClient) return;
+    
+    try {
+      setIsLoading(true);
+      const result = await apiClient.getAll();
+      setData(result);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+      toast.error('Failed to load data');
+      setData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiClient]);
 
   useEffect(() => {
     if (selectedType) {
       const client = new ApiClient(selectedType);
       setApiClient(client);
-      client.getAll().then(setData);
+    } else {
+      setApiClient(null);
+      setData([]);
     }
   }, [selectedType]);
 
-  const handleSave = (item: any) => {
-    if (apiClient) {
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleSave = async (item: any) => {
+    if (!apiClient) return;
+
+    try {
       if (item.id) {
-        apiClient.update(item.id, item).then(() => {
-          apiClient.getAll().then(setData);
-        });
+        await apiClient.update(item.id, item);
+        toast.success('Item updated successfully');
       } else {
-        apiClient.create(item).then(() => {
-          apiClient.getAll().then(setData);
-        });
+        await apiClient.create(item);
+        toast.success('Item created successfully');
       }
+      await fetchData();
+    } catch (error) {
+      console.error('Failed to save item:', error);
+      toast.error('Failed to save item');
+      throw error; // Re-throw to handle in the dialog
     }
   };
 
-  const handleDelete = (id: number) => {
-    if (apiClient) {
-      apiClient.delete(id).then(() => {
-        apiClient.getAll().then(setData);
-      });
+  const handleDelete = async (id: number) => {
+    if (!apiClient) return;
+
+    if (!window.confirm('Are you sure you want to delete this item?')) {
+      return;
+    }
+
+    try {
+      await apiClient.delete(id);
+      toast.success('Item deleted successfully');
+      await fetchData();
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      toast.error('Failed to delete item');
     }
   };
+
+  const selectedTypeLabel = types.find(type => type.value === selectedType)?.label;
 
   return (
     <PageContainer>
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
-          <Heading title={`Configuration`} description='Manage application types' />
-          <ConfigFormDialog onSave={handleSave} />
+          <Heading 
+            title={selectedTypeLabel ? `Configuration - ${selectedTypeLabel}` : 'Configuration'} 
+            description='Manage application types' 
+          />
+          {selectedType && (
+            <ConfigFormDialog onSave={handleSave} isLoading={isLoading} />
+          )}
         </div>
 
         <div className='w-full max-w-xs'>
-          <Select onValueChange={setSelectedType}>
+          <Select value={selectedType} onValueChange={setSelectedType}>
             <SelectTrigger>
               <SelectValue placeholder='Select a type' />
             </SelectTrigger>
@@ -97,8 +144,14 @@ export default function ConfigPage() {
             </SelectContent>
           </Select>
         </div>
+
         {selectedType && (
-          <ConfigTable data={data} onSave={handleSave} onDelete={handleDelete} />
+          <ConfigTable 
+            data={data} 
+            onSave={handleSave} 
+            onDelete={handleDelete}
+            isLoading={isLoading}
+          />
         )}
       </div>
     </PageContainer>

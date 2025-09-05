@@ -1,3 +1,5 @@
+// Fixed Form Dialog with Validation
+// inventory-control/src/features/config/components/config-form-dialog.tsx
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -19,31 +21,69 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+const formSchema = z.object({
+  code: z.string().min(1, 'Code is required').max(50, 'Code must be less than 50 characters'),
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
+  description: z.string().max(255, 'Description must be less than 255 characters').optional()
+});
 
 interface ConfigFormDialogProps {
-  onSave: (data: any) => void;
+  onSave: (data: any) => Promise<void>;
   item?: any;
+  isLoading?: boolean;
 }
 
-export function ConfigFormDialog({ onSave, item }: ConfigFormDialogProps) {
+export function ConfigFormDialog({ onSave, item, isLoading = false }: ConfigFormDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const form = useForm({
-    defaultValues: item
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      code: item?.code || '',
+      name: item?.name || '',
+      description: item?.description || ''
+    }
   });
 
   useEffect(() => {
-    form.reset(item);
+    if (item) {
+      form.reset({
+        code: item.code || '',
+        name: item.name || '',
+        description: item.description || ''
+      });
+    } else {
+      form.reset({
+        code: '',
+        name: '',
+        description: ''
+      });
+    }
   }, [item, form]);
 
-  const handleSubmit = (data: any) => {
-    onSave({ ...item, ...data });
+  const handleSubmit = async (data: any) => {
+    try {
+      setIsSubmitting(true);
+      await onSave({ ...item, ...data });
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error('Error saving item:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={item ? 'outline' : 'default'}>
+        <Button variant={item ? 'outline' : 'default'} disabled={isLoading}>
           {item ? 'Edit' : 'Add New'}
         </Button>
       </DialogTrigger>
@@ -65,7 +105,7 @@ export function ConfigFormDialog({ onSave, item }: ConfigFormDialogProps) {
               name='code'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Code</FormLabel>
+                  <FormLabel>Code *</FormLabel>
                   <FormControl>
                     <Input placeholder='Enter code' {...field} />
                   </FormControl>
@@ -78,7 +118,7 @@ export function ConfigFormDialog({ onSave, item }: ConfigFormDialogProps) {
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Name *</FormLabel>
                   <FormControl>
                     <Input placeholder='Enter name' {...field} />
                   </FormControl>
@@ -100,7 +140,19 @@ export function ConfigFormDialog({ onSave, item }: ConfigFormDialogProps) {
               )}
             />
             <DialogFooter>
-              <Button type='submit'>Save</Button>
+              <Button 
+                type='button' 
+                variant='outline' 
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type='submit' 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Saving...' : 'Save'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
