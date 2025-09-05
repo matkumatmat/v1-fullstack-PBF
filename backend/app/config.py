@@ -8,8 +8,10 @@ class Settings(BaseSettings):
     """
     # backend/app/config.py
 
-    # Baris yang lama (untuk SQLite)
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+    # Database settings - Updated for PostgreSQL
+    # The DATABASE_URL is constructed from environment variables.
+    # Format: postgresql+asyncpg://USER:PASSWORD@HOST:PORT/DB_NAME
+    DATABASE_URL: str = "postgresql+psycopg://postgres:kaayeeysides@localhost/pbfserver"
 
     # JWT settings
     SECRET_KEY: str = "kaayeey-sides-fullstack-pbf-app"  # CHANGE THIS IN PRODUCTION

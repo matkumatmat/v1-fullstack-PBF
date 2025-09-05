@@ -1,4 +1,5 @@
 import asyncio
+import sys
 import typer
 import uvicorn
 import os
@@ -8,6 +9,10 @@ import importlib
 # Load environment variables from .env file
 from dotenv import load_dotenv
 load_dotenv()
+
+# Set the event loop policy for Windows
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from app.database import Base, async_engine
 

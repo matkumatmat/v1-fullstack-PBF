@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from .config import settings
+from typing import AsyncGenerator
 
 # Create an asynchronous engine using the URL from settings
 # `echo=True` is useful for debugging as it logs all SQL statements.
@@ -23,7 +24,7 @@ AsyncSessionLocal = sessionmaker(
 # Our SQLAlchemy models will inherit from this class.
 Base = declarative_base()
 
-async def get_db_session() -> AsyncSession:
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
     Dependency to get a database session.
     This will be used in API endpoints to interact with the database.
