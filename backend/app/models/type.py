@@ -292,3 +292,4 @@ class DeliveryType(BaseModel):
     
     def __repr__(self):
         return f'<DeliveryMethod {self.name}>'
+    
