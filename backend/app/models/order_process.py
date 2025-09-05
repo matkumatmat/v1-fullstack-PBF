@@ -73,7 +73,7 @@ class SalesOrderItem(BaseModel):
     #product = relationship('Product', back_populates='sales_order_items')
     sales_order = relationship('SalesOrder', back_populates='items')
     #product_price_entry = relationship('ProductPrice', back_populates='sales_order_items')
-    #shipping_plan_items = relationship('ShippingPlanItem', back_populates='sales_order_item', cascade='all, delete-orphan')
+    shipping_plan_items = relationship('ShippingPlanItem', back_populates='sales_order_item', cascade='all, delete-orphan')
     
     sectors = relationship(
         'SectorType',
