@@ -7,7 +7,7 @@ from sqlalchemy import(
 from sqlalchemy.orm import relationship
 from .base import BaseModel
 
-#===PRODUCT ENUMS===#
+#===PRODUCT ENUMS===#   
 class ProductType(BaseModel):
     """Master data untuk jenis produk"""
     __tablename__ = 'product_types'

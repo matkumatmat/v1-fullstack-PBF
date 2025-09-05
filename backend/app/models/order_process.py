@@ -14,12 +14,10 @@ class SalesOrder(BaseModel):
     customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
     so_date = Column(Date, nullable=False)
     total_amount = Column(Numeric(15, 2))
-
     status = Column(String(50), default='PENDING', nullable=False)  
     input_by = Column(String(50))  
     notes = Column(Text)
     special_instructions = Column(Text)
-
     items = relationship('SalesOrderItem', back_populates='sales_order', cascade='all, delete-orphan')
     shipping_plan = relationship('ShippingPlan', back_populates='sales_order')
 
