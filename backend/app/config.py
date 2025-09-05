@@ -12,9 +12,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./test.db"
 
     # JWT settings
-    SECRET_KEY: str = "your-super-secret-key"  # CHANGE THIS IN PRODUCTION
+    SECRET_KEY: str = "kaayeey-sides-fullstack-pbf-app"  # CHANGE THIS IN PRODUCTION
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1000
 
     class Config:
         # This tells pydantic-settings to load variables from a .env file
