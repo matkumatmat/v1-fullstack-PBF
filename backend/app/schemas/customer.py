@@ -231,28 +231,109 @@ class CustomerSchema(BaseSchema, TimestampMixin, StatusMixin, ERPMixin, AddressM
         return v
 
 # Input schemas
-class CustomerCreateSchema(CustomerSchema):
-    class Config:
-        exclude = {'id', 'public_id', 'created_date', 'created_by', 'last_modified_date', 
-                  'last_modified_by', 'erp_sync_date', 'addresses', 'default_address', 'delivery_addresses'}
+class CustomerCreateSchema(BaseModel):
+    customer_code: str
+    name: str
+    legal_name: Optional[str] = None
+    customer_type_id: int
+    sector_type_id: int
+    fax: Optional[str] = None
+    website: Optional[str] = None
+    tax_id: Optional[str] = None
+    business_license: Optional[str] = None
+    industry: Optional[str] = None
+    credit_limit: Optional[Decimal] = None
+    payment_terms_days: int = 30
+    currency: str = 'IDR'
+    is_tender_eligible: bool = False
+    requires_approval: bool = False
+    default_delivery_method: Optional[str] = None
+    special_delivery_instructions: Optional[str] = None
+    erp_customer_id: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state_province: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: str = 'Indonesia'
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    status: Optional[str] = None
+    is_active: Optional[bool] = True
 
-class CustomerUpdateSchema(CustomerSchema):
-    customer_code: Optional[str]
-    name: Optional[str]
-    customer_type_id: Optional[int]
-    sector_type_id: Optional[int]
-    
-    class Config:
-        exclude = ('id', 'public_id', 'created_date', 'created_by', 'last_modified_date',
-                  'last_modified_by', 'erp_sync_date', 'addresses', 'default_address', 'delivery_addresses')
 
-class CustomerAddressCreateSchema(CustomerAddressSchema):
-    class Config:
-        exclude = ('id', 'public_id', 'created_date', 'created_by')
+class CustomerUpdateSchema(BaseModel):
+    customer_code: Optional[str] = None
+    name: Optional[str] = None
+    legal_name: Optional[str] = None
+    customer_type_id: Optional[int] = None
+    sector_type_id: Optional[int] = None
+    fax: Optional[str] = None
+    website: Optional[str] = None
+    tax_id: Optional[str] = None
+    business_license: Optional[str] = None
+    industry: Optional[str] = None
+    credit_limit: Optional[Decimal] = None
+    payment_terms_days: Optional[int] = None
+    currency: Optional[str] = None
+    is_tender_eligible: Optional[bool] = None
+    requires_approval: Optional[bool] = None
+    default_delivery_method: Optional[str] = None
+    special_delivery_instructions: Optional[str] = None
+    erp_customer_id: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state_province: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    status: Optional[str] = None
+    is_active: Optional[bool] = None
 
-class CustomerAddressUpdateSchema(CustomerAddressSchema):
-    customer_id: Optional[int]
-    address_name: Optional[str]
-    
-    class Config:
-        exclude = ('id', 'public_id', 'created_date', 'created_by')
+
+class CustomerAddressCreateSchema(BaseModel):
+    customer_id: int
+    address_name: str
+    address_type: str = 'DELIVERY'
+    contact_person: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    delivery_instructions: Optional[str] = None
+    special_requirements: Optional[str] = None
+    latitude: Optional[Decimal] = None
+    longitude: Optional[Decimal] = None
+    is_default: bool = False
+    is_active: bool = True
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state_province: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: str = 'Indonesia'
+    phone: Optional[str] = None
+    email: Optional[str] = None
+
+
+class CustomerAddressUpdateSchema(BaseModel):
+    customer_id: Optional[int] = None
+    address_name: Optional[str] = None
+    address_type: Optional[str] = None
+    contact_person: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    delivery_instructions: Optional[str] = None
+    special_requirements: Optional[str] = None
+    latitude: Optional[Decimal] = None
+    longitude: Optional[Decimal] = None
+    is_default: Optional[bool] = None
+    is_active: Optional[bool] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state_province: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None

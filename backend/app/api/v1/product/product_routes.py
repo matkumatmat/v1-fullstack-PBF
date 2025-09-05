@@ -5,17 +5,21 @@ Product Routes
 CRUD routes untuk Product management
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, status, Query
 from typing import Dict, Any, List, Optional
 
-from ...services import ServiceRegistry
-from ...schemas import ProductSchema, ProductCreateSchema, ProductUpdateSchema
-from ...dependencies import get_service_registry
-from ...responses import APIResponse
+from app.services import ServiceRegistry
+from app.schemas import (
+    ProductSchema, ProductCreateSchema, ProductUpdateSchema, BatchSchema, AllocationSchema
+)
+from app.dependencies import get_service_registry, get_current_user
+from app.responses import APIResponse
+from app.schemas.base import PaginationSchema
 
 router = APIRouter()
 
-@router.get("", response_model=Dict[str, Any])
+
+@router.get("", response_model=APIResponse[List[ProductSchema]])
 async def get_products(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=100),
@@ -27,272 +31,182 @@ async def get_products(
 ):
     """
     Get products dengan pagination dan filtering
-    
-    **Query Parameters:**
-    - page: Page number (default: 1)
-    - per_page: Items per page (default: 50, max: 100)
-    - search: Search dalam product_code, name, generic_name
-    - product_type_id: Filter by product type
-    - manufacturer: Filter by manufacturer
-    - is_active: Filter by status (default: true)
     """
-    try:
-        # Build filters
-        filters = {}
-        if product_type_id:
-            filters['product_type_id'] = product_type_id
-        if manufacturer:
-            filters['manufacturer'] = manufacturer
-        if is_active is not None:
-            filters['is_active'] = is_active
-        
-        # Get products
-        result = service_registry.product_service.get_all(
-            page=page,
-            per_page=per_page,
-            search=search,
-            filters=filters
-        )
-        
-        return APIResponse.paginated(
-            data=result['items'],
-            total=result['total'],
-            page=page,
-            per_page=per_page,
-            message="Products retrieved successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    filters = {}
+    if product_type_id:
+        filters['product_type_id'] = product_type_id
+    if manufacturer:
+        filters['manufacturer'] = manufacturer
+    if is_active is not None:
+        filters['is_active'] = is_active
 
-@router.post("", response_model=Dict[str, Any])
+    result = await service_registry.product.list(
+        page=page,
+        per_page=per_page,
+        search=search,
+        filters=filters
+    )
+
+    return APIResponse.paginated(
+        data=result['items'],
+        pagination=PaginationSchema(**result['pagination']),
+        message="Products retrieved successfully"
+    )
+
+
+@router.post("", response_model=APIResponse[ProductSchema], status_code=status.HTTP_201_CREATED)
 async def create_product(
     product_data: ProductCreateSchema,
-    service_registry: ServiceRegistry = Depends(get_service_registry)
+    service_registry: ServiceRegistry = Depends(get_service_registry),
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """
     Create new product
-    
-    **Input validation:**
-    - product_code: Must be unique
-    - name: Required
-    - product_type_id: Must exist
     """
-    try:
-        product = service_registry.product_service.create(product_data.dict())
-        
-        return APIResponse.success(
-            data=product,
-            message="Product created successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    product = await service_registry.product.create(
+        product_data.model_dump(),
+        username=current_user["username"]
+    )
+    return APIResponse.success(
+        data=product,
+        message="Product created successfully"
+    )
 
-@router.get("/{product_id}", response_model=Dict[str, Any])
+
+@router.get("/{product_id}", response_model=APIResponse[ProductSchema])
 async def get_product(
     product_id: int,
-    include_batches: bool = Query(False),
     service_registry: ServiceRegistry = Depends(get_service_registry)
 ):
     """
     Get product by ID
-    
-    **Query Parameters:**
-    - include_batches: Include product batches in response
     """
-    try:
-        if include_batches:
-            product = service_registry.product_service.get_product_with_batches(product_id)
-        else:
-            product = service_registry.product_service.get_by_id(product_id)
-        
-        return APIResponse.success(
-            data=product,
-            message="Product retrieved successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+    product = await service_registry.product.get_by_id(product_id)
+    return APIResponse.success(
+        data=product,
+        message="Product retrieved successfully"
+    )
 
-@router.put("/{product_id}", response_model=Dict[str, Any])
+
+@router.put("/{product_id}", response_model=APIResponse[ProductSchema])
 async def update_product(
     product_id: int,
     product_data: ProductUpdateSchema,
-    service_registry: ServiceRegistry = Depends(get_service_registry)
+    service_registry: ServiceRegistry = Depends(get_service_registry),
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """Update product"""
-    try:
-        product = service_registry.product_service.update(
-            product_id, 
-            product_data.dict(exclude_unset=True)
-        )
-        
-        return APIResponse.success(
-            data=product,
-            message="Product updated successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    product = await service_registry.product.update(
+        product_id,
+        product_data.model_dump(exclude_unset=True),
+        username=current_user["username"]
+    )
+    return APIResponse.success(
+        data=product,
+        message="Product updated successfully"
+    )
 
-@router.delete("/{product_id}")
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_product(
     product_id: int,
-    service_registry: ServiceRegistry = Depends(get_service_registry)
+    service_registry: ServiceRegistry = Depends(get_service_registry),
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """Soft delete product (deactivate)"""
-    try:
-        service_registry.product_service.delete(product_id)
-        
-        return APIResponse.success(message="Product deleted successfully")
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    await service_registry.product.delete(product_id, username=current_user["username"])
+    return APIResponse.success(message="Product deleted successfully")
 
-@router.get("/code/{product_code}", response_model=Dict[str, Any])
+
+@router.get("/code/{product_code}", response_model=APIResponse[ProductSchema])
 async def get_product_by_code(
     product_code: str,
     service_registry: ServiceRegistry = Depends(get_service_registry)
 ):
     """Get product by product code"""
-    try:
-        product = service_registry.product_service.get_by_product_code(product_code)
-        
-        return APIResponse.success(
-            data=product,
-            message="Product retrieved successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+    product = await service_registry.product.get_by_code(product_code)
+    return APIResponse.success(
+        data=product,
+        message="Product retrieved successfully"
+    )
 
-@router.get("/{product_id}/stock-summary")
+
+@router.get("/{product_id}/stock-summary", response_model=APIResponse[Dict[str, Any]])
 async def get_product_stock_summary(
     product_id: int,
     service_registry: ServiceRegistry = Depends(get_service_registry)
 ):
     """Get comprehensive stock summary untuk product"""
-    try:
-        stock_summary = service_registry.inventory_service.get_stock_summary_by_product(product_id)
-        
-        return APIResponse.success(
-            data=stock_summary,
-            message="Product stock summary retrieved successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    stock_summary = await service_registry.product.get_product_stock_summary(product_id)
+    return APIResponse.success(
+        data=stock_summary,
+        message="Product stock summary retrieved successfully"
+    )
 
-@router.get("/{product_id}/batches")
+
+@router.get("/{product_id}/batches", response_model=APIResponse[List[BatchSchema]])
 async def get_product_batches(
     product_id: int,
     include_inactive: bool = Query(False),
     service_registry: ServiceRegistry = Depends(get_service_registry)
 ):
     """Get all batches untuk specific product"""
-    try:
-        batches = service_registry.batch_service.get_batches_by_product(
-            product_id, 
-            include_inactive=include_inactive
-        )
-        
-        return APIResponse.success(
-            data=batches,
-            message="Product batches retrieved successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    batches = await service_registry.batch.get_batches_by_product(
+        product_id,
+        include_inactive=include_inactive
+    )
+    return APIResponse.success(
+        data=batches,
+        message="Product batches retrieved successfully"
+    )
 
-@router.get("/{product_id}/allocations")
+
+@router.get("/{product_id}/allocations", response_model=APIResponse[List[AllocationSchema]])
 async def get_product_allocations(
     product_id: int,
     status: Optional[str] = Query(None),
     service_registry: ServiceRegistry = Depends(get_service_registry)
 ):
     """Get all allocations untuk specific product"""
-    try:
-        allocations = service_registry.allocation_service.get_allocations_by_product(
-            product_id,
-            status=status
-        )
-        
-        return APIResponse.success(
-            data=allocations,
-            message="Product allocations retrieved successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    allocations = await service_registry.allocation.get_allocations_by_product(
+        product_id,
+        status=status
+    )
+    return APIResponse.success(
+        data=allocations,
+        message="Product allocations retrieved successfully"
+    )
 
-@router.post("/{product_id}/activate")
+
+@router.post("/{product_id}/activate", response_model=APIResponse[ProductSchema])
 async def activate_product(
     product_id: int,
-    service_registry: ServiceRegistry = Depends(get_service_registry)
+    service_registry: ServiceRegistry = Depends(get_service_registry),
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """Activate product"""
-    try:
-        product = service_registry.product_service.activate_product(product_id)
-        
-        return APIResponse.success(
-            data=product,
-            message="Product activated successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    product = await service_registry.product.activate(product_id, username=current_user["username"])
+    return APIResponse.success(
+        data=product,
+        message="Product activated successfully"
+    )
 
-@router.post("/{product_id}/deactivate")
+
+@router.post("/{product_id}/deactivate", response_model=APIResponse[ProductSchema])
 async def deactivate_product(
     product_id: int,
     reason: Dict[str, str],
-    service_registry: ServiceRegistry = Depends(get_service_registry)
+    service_registry: ServiceRegistry = Depends(get_service_registry),
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """Deactivate product"""
-    try:
-        product = service_registry.product_service.deactivate_product(
-            product_id,
-            reason.get('reason', 'Deactivated via API')
-        )
-        
-        return APIResponse.success(
-            data=product,
-            message="Product deactivated successfully"
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    # Note: The 'delete' method in CRUDService handles deactivation.
+    # We can pass a reason in the future if the service supports it.
+    product = await service_registry.product.delete(
+        product_id,
+        username=current_user["username"]
+    )
+    return APIResponse.success(
+        data=product,
+        message="Product deactivated successfully"
+    )

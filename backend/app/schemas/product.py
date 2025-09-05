@@ -132,38 +132,88 @@ class TemperatureTypeSchema(BaseSchema):
             raise ValueError('Min temperature cannot be greater than max temperature')
         return values
 
-class ProductTypeCreateSchema(ProductTypeSchema):
-    class Config:
-        exclude = ('id',)
+class ProductTypeCreateSchema(BaseModel):
+    code: str
+    name: str
+    description: Optional[str] = None
+    requires_batch_tracking: bool = True
+    requires_expiry_tracking: bool = True
+    shelf_life_days: Optional[int] = None
+    is_active: bool = True
+    sort_order: int = 0
 
-class ProductTypeUpdateSchema(ProductTypeSchema):
-    code: Optional[str]
-    name: Optional[str]
-    
-    class Config:
-        exclude = ('id',)
 
-class PackageTypeCreateSchema(PackageTypeSchema):
-    class Config:
-        exclude = ('id',)
+class ProductTypeUpdateSchema(BaseModel):
+    code: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    requires_batch_tracking: Optional[bool] = None
+    requires_expiry_tracking: Optional[bool] = None
+    shelf_life_days: Optional[int] = None
+    is_active: Optional[bool] = None
+    sort_order: Optional[int] = None
 
-class PackageTypeUpdateSchema(PackageTypeSchema):
-    code: Optional[str]
-    name: Optional[str]
-    
-    class Config:
-        exclude = ('id',)
 
-class TemperatureTypeCreateSchema(TemperatureTypeSchema):
-    class Config:
-        exclude = ('id',)
+class PackageTypeCreateSchema(BaseModel):
+    code: str
+    name: str
+    description: Optional[str] = None
+    is_fragile: bool = False
+    is_stackable: bool = True
+    max_stack_height: Optional[int] = None
+    standard_length: Optional[float] = None
+    standard_width: Optional[float] = None
+    standard_height: Optional[float] = None
+    standard_weight: Optional[float] = None
+    special_handling_required: bool = False
+    handling_instructions: Optional[str] = None
+    is_active: bool = True
 
-class TemperatureTypeUpdateSchema(TemperatureTypeSchema):
-    code: Optional[str]
-    name: Optional[str]
-    
-    class Config:
-        exclude = ('id',)
+
+class PackageTypeUpdateSchema(BaseModel):
+    code: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    is_fragile: Optional[bool] = None
+    is_stackable: Optional[bool] = None
+    max_stack_height: Optional[int] = None
+    standard_length: Optional[float] = None
+    standard_width: Optional[float] = None
+    standard_height: Optional[float] = None
+    standard_weight: Optional[float] = None
+    special_handling_required: Optional[bool] = None
+    handling_instructions: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class TemperatureTypeCreateSchema(BaseModel):
+    code: str
+    name: str
+    description: Optional[str] = None
+    min_celsius: Optional[float] = None
+    max_celsius: Optional[float] = None
+    optimal_celsius: Optional[float] = None
+    celsius_display: Optional[str] = None
+    humidity_range: Optional[str] = None
+    special_storage_requirements: Optional[str] = None
+    color_code: Optional[str] = None
+    icon: Optional[str] = None
+    is_active: bool = True
+
+
+class TemperatureTypeUpdateSchema(BaseModel):
+    code: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    min_celsius: Optional[float] = None
+    max_celsius: Optional[float] = None
+    optimal_celsius: Optional[float] = None
+    celsius_display: Optional[str] = None
+    humidity_range: Optional[str] = None
+    special_storage_requirements: Optional[str] = None
+    color_code: Optional[str] = None
+    icon: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class ProductSchema(BaseSchema, TimestampMixin, StatusMixin, ERPMixin):
     """Schema untuk Product model"""
@@ -569,55 +619,169 @@ class StockMovementSchema(BaseSchema, TimestampMixin):
         return v
 
 # Input schemas for create/update operations
-class ProductCreateSchema(ProductSchema):
-    class Config:
-        exclude = {'id', 'public_id', 'created_date', 'created_by', 'last_modified_date', 'last_modified_by'}
+class ProductCreateSchema(BaseModel):
+    product_code: str
+    name: str
+    generic_name: Optional[str] = None
+    strength: Optional[str] = None
+    dosage_form: Optional[str] = None
+    product_type_id: int
+    package_type_id: Optional[int] = None
+    temperature_type_id: Optional[int] = None
+    manufacturer: Optional[str] = None
+    country_origin: Optional[str] = None
+    registration_number: Optional[str] = None
+    unit_of_measure: str = 'PCS'
+    weight_per_unit: Optional[Decimal] = None
+    volume_per_unit: Optional[Decimal] = None
+    unit_cost: Optional[Decimal] = None
+    selling_price: Optional[Decimal] = None
+    erp_product_id: Optional[str] = None
+    status: Optional[str] = None
+    is_active: Optional[bool] = True
 
-class ProductUpdateSchema(ProductSchema):
-    product_code: Optional[str]
-    name: Optional[str]
-    product_type_id: Optional[int]
-    
-    class Config:
-        exclude = {'id', 'public_id', 'created_date', 'created_by', 'last_modified_date', 'last_modified_by'}
 
-class BatchCreateSchema(BatchSchema):
-    class Config:
-        exclude = {'id', 'public_id', 'created_date', 'created_by'}
+class ProductUpdateSchema(BaseModel):
+    product_code: Optional[str] = None
+    name: Optional[str] = None
+    generic_name: Optional[str] = None
+    strength: Optional[str] = None
+    dosage_form: Optional[str] = None
+    product_type_id: Optional[int] = None
+    package_type_id: Optional[int] = None
+    temperature_type_id: Optional[int] = None
+    manufacturer: Optional[str] = None
+    country_origin: Optional[str] = None
+    registration_number: Optional[str] = None
+    unit_of_measure: Optional[str] = None
+    weight_per_unit: Optional[Decimal] = None
+    volume_per_unit: Optional[Decimal] = None
+    unit_cost: Optional[Decimal] = None
+    selling_price: Optional[Decimal] = None
+    erp_product_id: Optional[str] = None
+    status: Optional[str] = None
+    is_active: Optional[bool] = None
 
-class BatchUpdateSchema(BatchSchema):
-    product_id: Optional[int]
-    batch_number: Optional[str]
-    received_quantity: Optional[int]
-    received_date: Optional[date]
-    
-    class Config:
-        exclude = {'id', 'public_id', 'created_date', 'created_by'}
 
-class AllocationCreateSchema(AllocationSchema):
-    class Config:
-        exclude = {'id', 'public_id', 'allocation_number', 'created_date', 'created_by', 
-                  'last_modified_date', 'last_modified_by', 'available_stock', 'remaining_for_allocation'}
+class BatchCreateSchema(BaseModel):
+    product_id: int
+    batch_number: str
+    lot_number: Optional[str] = None
+    serial_number: Optional[str] = None
+    nie_number: Optional[str] = None
+    registration_number: Optional[str] = None
+    received_quantity: int
+    manufacturing_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    received_date: date
+    qc_status: str = 'PENDING'
+    qc_date: Optional[datetime] = None
+    qc_notes: Optional[str] = None
+    qc_by: Optional[str] = None
+    supplier_name: Optional[str] = None
+    supplier_batch_number: Optional[str] = None
+    purchase_order_number: Optional[str] = None
+    unit_cost: Optional[Decimal] = None
+    total_cost: Optional[Decimal] = None
+    status: str = 'ACTIVE'
+    erp_batch_id: Optional[str] = None
 
-class AllocationUpdateSchema(AllocationSchema):
-    batch_id: Optional[int]
-    allocation_type_id: Optional[int]
-    allocated_quantity: Optional[int]
-    allocation_date: Optional[date]
-    
-    class Config:
-        exclude = ('id', 'public_id', 'allocation_number', 'created_date', 'created_by',
-                  'last_modified_date', 'last_modified_by', 'available_stock', 'remaining_for_allocation')
 
-class StockMovementCreateSchema(StockMovementSchema):
-    class Config:
-        exclude = ('id', 'public_id', 'movement_number', 'created_date', 'created_by')
+class BatchUpdateSchema(BaseModel):
+    product_id: Optional[int] = None
+    batch_number: Optional[str] = None
+    lot_number: Optional[str] = None
+    serial_number: Optional[str] = None
+    nie_number: Optional[str] = None
+    registration_number: Optional[str] = None
+    received_quantity: Optional[int] = None
+    manufacturing_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    received_date: Optional[date] = None
+    qc_status: Optional[str] = None
+    qc_date: Optional[datetime] = None
+    qc_notes: Optional[str] = None
+    qc_by: Optional[str] = None
+    supplier_name: Optional[str] = None
+    supplier_batch_number: Optional[str] = None
+    purchase_order_number: Optional[str] = None
+    unit_cost: Optional[Decimal] = None
+    total_cost: Optional[Decimal] = None
+    status: Optional[str] = None
+    erp_batch_id: Optional[str] = None
 
-class StockMovementUpdateSchema(StockMovementSchema):
-    allocation_id: Optional[int]
-    movement_type_id: Optional[int]
-    quantity: Optional[int]
-    movement_date: Optional[datetime]
 
-    class Config:
-        exclude = ('id', 'public_id', 'movement_number', 'created_date', 'created_by')
+class AllocationCreateSchema(BaseModel):
+    batch_id: int
+    allocation_type_id: int
+    customer_id: Optional[int] = None
+    tender_contract_id: Optional[int] = None
+    allocated_quantity: int
+    shipped_quantity: int = 0
+    reserved_quantity: int = 0
+    original_reserved_quantity: int = 0
+    customer_allocated_quantity: int = 0
+    status: str = 'active'
+    allocation_date: date
+    expiry_date: Optional[date] = None
+    priority_level: int = 5
+    special_instructions: Optional[str] = None
+    handling_requirements: Optional[str] = None
+    unit_cost: Optional[Decimal] = None
+    total_value: Optional[Decimal] = None
+
+
+class AllocationUpdateSchema(BaseModel):
+    batch_id: Optional[int] = None
+    allocation_type_id: Optional[int] = None
+    customer_id: Optional[int] = None
+    tender_contract_id: Optional[int] = None
+    allocated_quantity: Optional[int] = None
+    shipped_quantity: Optional[int] = None
+    reserved_quantity: Optional[int] = None
+    original_reserved_quantity: Optional[int] = None
+    customer_allocated_quantity: Optional[int] = None
+    status: Optional[str] = None
+    allocation_date: Optional[date] = None
+    expiry_date: Optional[date] = None
+    priority_level: Optional[int] = None
+    special_instructions: Optional[str] = None
+    handling_requirements: Optional[str] = None
+    unit_cost: Optional[Decimal] = None
+    total_value: Optional[Decimal] = None
+
+
+class StockMovementCreateSchema(BaseModel):
+    allocation_id: int
+    movement_type_id: int
+    quantity: int
+    movement_date: datetime = datetime.now()
+    source_rack_id: Optional[int] = None
+    destination_rack_id: Optional[int] = None
+    reference_type: Optional[str] = None
+    reference_id: Optional[int] = None
+    reference_number: Optional[str] = None
+    requested_by: Optional[str] = None
+    approved_by: Optional[str] = None
+    executed_by: Optional[str] = None
+    status: str = 'COMPLETED'
+    notes: Optional[str] = None
+    reason: Optional[str] = None
+
+
+class StockMovementUpdateSchema(BaseModel):
+    allocation_id: Optional[int] = None
+    movement_type_id: Optional[int] = None
+    quantity: Optional[int] = None
+    movement_date: Optional[datetime] = None
+    source_rack_id: Optional[int] = None
+    destination_rack_id: Optional[int] = None
+    reference_type: Optional[str] = None
+    reference_id: Optional[int] = None
+    reference_number: Optional[str] = None
+    requested_by: Optional[str] = None
+    approved_by: Optional[str] = None
+    executed_by: Optional[str] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+    reason: Optional[str] = None

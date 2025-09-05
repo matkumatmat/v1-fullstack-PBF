@@ -12,4 +12,4 @@ from app import create_app
 
 # Fungsi ini yang akan dipanggil oleh Uvicorn
 # Uvicorn akan mencari variabel 'app' secara default jika 'factory=True' digunakan
-app = create_app
+app = create_app()
