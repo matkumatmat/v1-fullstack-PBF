@@ -2,11 +2,26 @@ import uuid
 from sqlalchemy import(
     Column, Integer, String, ForeignKey, 
     Text, DateTime, Date, Numeric, Boolean,
-    Float, func, UniqueConstraint
+    Float, func, UniqueConstraint, Table
 )
 from sqlalchemy.orm import relationship
 from .base import BaseModel
-from .order_process import sales_order_item_sector_association, sales_order_item_allocation_association
+
+# Tabel perantara untuk SalesOrderItem <-> SectorType
+sales_order_item_sector_association = Table(
+    'so_item_sector_association',
+    BaseModel.metadata,
+    Column('sales_order_item_id', Integer, ForeignKey('sales_order_items.id'), primary_key=True),
+    Column('sector_type_id', Integer, ForeignKey('sector_types.id'), primary_key=True)
+)
+
+# Tabel perantara untuk SalesOrderItem <-> AllocationType
+sales_order_item_allocation_association = Table(
+    'so_item_allocation_association',
+    BaseModel.metadata,
+    Column('sales_order_item_id', Integer, ForeignKey('sales_order_items.id'), primary_key=True),
+    Column('allocation_type_id', Integer, ForeignKey('allocation_types.id'), primary_key=True)
+)
 
 #===PRODUCT ENUMS===#   
 class ProductType(BaseModel):

@@ -6,28 +6,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from .base import BaseModel
-from .type import SectorType, AllocationType
-
-
-##====perantara===#
-from sqlalchemy import Table, Column, Integer, ForeignKey
-from .base import BaseModel
-
-# Tabel perantara untuk SalesOrderItem <-> SectorType
-sales_order_item_sector_association = Table(
-    'so_item_sector_association',
-    BaseModel.metadata,
-    Column('sales_order_item_id', Integer, ForeignKey('sales_order_items.id'), primary_key=True),
-    Column('sector_type_id', Integer, ForeignKey('sector_types.id'), primary_key=True)
+from .type import (
+    SectorType, AllocationType,
+    sales_order_item_sector_association,
+    sales_order_item_allocation_association
 )
 
-# Tabel perantara untuk SalesOrderItem <-> AllocationType
-sales_order_item_allocation_association = Table(
-    'so_item_allocation_association',
-    BaseModel.metadata,
-    Column('sales_order_item_id', Integer, ForeignKey('sales_order_items.id'), primary_key=True),
-    Column('allocation_type_id', Integer, ForeignKey('allocation_types.id'), primary_key=True)
-)   
 
 class SalesOrder(BaseModel):
     __tablename__ = 'sales_order'
