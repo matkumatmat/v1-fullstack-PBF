@@ -10,7 +10,8 @@ from datetime import datetime, date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, func, desc, select
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, NotFoundError
 from ...models import StockMovement, MovementType, Allocation, Rack
 from ...schemas import StockMovementSchema, StockMovementCreateSchema, StockMovementUpdateSchema

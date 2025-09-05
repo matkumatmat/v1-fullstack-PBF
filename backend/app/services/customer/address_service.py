@@ -9,7 +9,8 @@ from typing import Dict, Any, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, select, func
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, BusinessRuleError, NotFoundError
 from ...models import CustomerAddress, Customer
 from ...schemas import CustomerAddressSchema, CustomerAddressCreateSchema, CustomerAddressUpdateSchema

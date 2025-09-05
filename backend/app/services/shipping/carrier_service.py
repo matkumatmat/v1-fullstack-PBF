@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func, desc, asc
 
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, ConflictError
 from ...models import Carrier, CarrierType
 from ...schemas import CarrierSchema, CarrierCreateSchema, CarrierUpdateSchema

@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..base import CRUDService
+from ..generics import CRUDService
 from ...models.helper import CustomerType
 from ...schemas.customer_type import CustomerTypeCreateSchema, CustomerTypeUpdateSchema, CustomerTypeSchema
 

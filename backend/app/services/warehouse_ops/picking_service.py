@@ -10,7 +10,8 @@ from datetime import datetime, date, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, BusinessRuleError, PickingError, NotFoundError
 from ...models import (
     PickingList, PickingListItem, PickingOrder, PickingOrderItem,

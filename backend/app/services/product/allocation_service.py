@@ -12,7 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, or_, func, desc, asc, select
 from enum import Enum
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import (
     ValidationError, BusinessRuleError, InsufficientStockError, 
     AllocationError, ContractError, NotFoundError

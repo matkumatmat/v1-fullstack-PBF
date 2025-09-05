@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..base import CRUDService
+from ..generics import CRUDService
 from ...models.helper import ProductType
 from ...schemas.product_type import ProductTypeCreateSchema, ProductTypeUpdateSchema, ProductTypeSchema
 

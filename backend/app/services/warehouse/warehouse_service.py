@@ -8,7 +8,8 @@ Service untuk Warehouse management
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, ConflictError, NotFoundError
 from ...models import Warehouse, Rack
 from ...schemas import WarehouseSchema, WarehouseCreateSchema, WarehouseUpdateSchema

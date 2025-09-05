@@ -10,7 +10,8 @@ from datetime import datetime, date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, BusinessRuleError, ConsignmentError
 from ...models import ConsignmentReturn, Consignment, ConsignmentItem
 from ...schemas import ConsignmentReturnSchema, ConsignmentReturnCreateSchema, ConsignmentReturnUpdateSchema

@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, func
 import datetime
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, BusinessRuleError, NotFoundError
 from ...models import Rack, Warehouse, RackAllocation, Allocation
 from ...schemas import RackSchema, RackCreateSchema, RackUpdateSchema, RackAllocationSchema
