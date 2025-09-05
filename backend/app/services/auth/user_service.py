@@ -13,7 +13,8 @@ from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_, or_, func, desc, asc, select
 
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, ConflictError, AuthenticationError, NotFoundError
 from ...models import User, UserSession, UserActivity
 from ...schemas import UserSchema, UserCreateSchema, UserUpdateSchema, PasswordChangeSchema

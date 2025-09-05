@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..base import CRUDService
+from ..generics import CRUDService
 from ...models.helper import TemperatureType
 from ...schemas.temperature_type import TemperatureTypeCreateSchema, TemperatureTypeUpdateSchema, TemperatureTypeSchema
 

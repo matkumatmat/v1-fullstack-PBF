@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..base import CRUDService
+from ..generics import CRUDService
 from ...models.helper import AllocationType
 from ...schemas.allocation_type import AllocationTypeCreateSchema, AllocationTypeUpdateSchema, AllocationTypeSchema
 

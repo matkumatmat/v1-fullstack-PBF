@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..base import CRUDService
+from ..generics import CRUDService
 from ...models.helper import LocationType
 from ...schemas.location_type import LocationTypeCreateSchema, LocationTypeUpdateSchema, LocationTypeSchema
 

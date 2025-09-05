@@ -9,7 +9,8 @@ from typing import Dict, Any, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, ConflictError, NotFoundError
 from ...models import Product, ProductType, PackageType, TemperatureType
 from ...schemas import (

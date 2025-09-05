@@ -10,7 +10,8 @@ from datetime import datetime, date, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import and_, func, or_, select
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, BusinessRuleError, ContractError, NotFoundError
 from ...models import TenderContract, ContractReservation, Customer, Allocation
 from ...schemas import TenderContractSchema, TenderContractCreateSchema, TenderContractUpdateSchema

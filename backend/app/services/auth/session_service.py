@@ -10,7 +10,8 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, select
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, NotFoundError
 from ...models import UserSession, User
 from ...schemas import UserSessionSchema, UserSessionCreateSchema, UserSessionUpdateSchema

@@ -12,7 +12,8 @@ from datetime import datetime, date
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func
 
-from ..base import CRUDService, transactional, audit_log
+from ..generics import CRUDService
+from ..base import transactional, audit_log
 from ..exceptions import ValidationError, NotFoundError
 from ...models import ShipmentTracking, Shipment
 from ...schemas import ShipmentTrackingSchema, ShipmentTrackingCreateSchema, ShipmentTrackingUpdateSchema
