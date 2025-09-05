@@ -1,15 +1,7 @@
-import tracemalloc
-tracemalloc.start()
+from fastapi import FastAPI
+from app.routes.v1.api import api_router
 
-# backends/main.py
-
-# --- FIX: Tambahkan dua baris ini di paling atas ---
-from dotenv import load_dotenv
-load_dotenv(override=True)
-# ----------------------------------------------------
-
-from app import create_app
-
-# Fungsi ini yang akan dipanggil oleh Uvicorn
-# Uvicorn akan mencari variabel 'app' secara default jika 'factory=True' digunakan
-app = create_app()
+def create_app():
+    app = FastAPI()
+    app.include_router(api_router, prefix="/api/v1")
+    return app
