@@ -6,10 +6,10 @@ class Settings(BaseSettings):
     Application settings are loaded from environment variables.
     A .env file is supported for local development.
     """
-    # Database settings
-    # The default value uses a local SQLite database for simplicity.
-    # For PostgreSQL, this would be: "postgresql+asyncpg://user:password@host/dbname"
-    DATABASE_URL: str = "sqlite+aiosqlite:///./test.db"
+    # backend/app/config.py
+
+    # Baris yang lama (untuk SQLite)
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
 
     # JWT settings
     SECRET_KEY: str = "kaayeey-sides-fullstack-pbf-app"  # CHANGE THIS IN PRODUCTION
