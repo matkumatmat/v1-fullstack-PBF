@@ -22,7 +22,7 @@ class ProductPriceInDBBase(ProductPriceBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ProductPrice(ProductPriceInDBBase):
     pass

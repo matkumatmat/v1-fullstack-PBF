@@ -23,7 +23,7 @@ class SectorTypeInDBBase(SectorTypeBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class SectorType(SectorTypeInDBBase):
     pass

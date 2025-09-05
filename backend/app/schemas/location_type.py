@@ -23,7 +23,7 @@ class LocationTypeInDBBase(LocationTypeBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class LocationType(LocationTypeInDBBase):
     pass

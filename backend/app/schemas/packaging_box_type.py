@@ -27,7 +27,7 @@ class PackagingBoxTypeInDBBase(PackagingBoxTypeBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class PackagingBoxType(PackagingBoxTypeInDBBase):
     pass

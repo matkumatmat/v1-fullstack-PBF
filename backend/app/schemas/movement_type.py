@@ -19,7 +19,7 @@ class MovementTypeInDBBase(MovementTypeBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class MovementType(MovementTypeInDBBase):
     pass

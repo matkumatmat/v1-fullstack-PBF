@@ -24,7 +24,7 @@ class TemperatureTypeInDBBase(TemperatureTypeBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class TemperatureType(TemperatureTypeInDBBase):
     pass
