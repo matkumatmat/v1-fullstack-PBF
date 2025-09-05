@@ -26,21 +26,21 @@ interface ConfigItem {
 }
 
 const types = [
-  { value: 'product_type', label: 'Product Type' },
-  { value: 'customer_type', label: 'Customer Type' },
-  { value: 'delivery_type', label: 'Delivery Type' },
-  { value: 'document_type', label: 'Document Type' },
-  { value: 'location_type', label: 'Location Type' },
-  { value: 'movement_type', label: 'Movement Type' },
-  { value: 'notification_type', label: 'Notification Type' },
-  { value: 'package_type', label: 'Package Type' },
-  { value: 'packaging_box_type', label: 'Packaging Box Type' },
-  { value: 'packaging_material', label: 'Packaging Material' },
-  { value: 'priority_level', label: 'Priority Level' },
-  { value: 'product_price', label: 'Product Price' },
-  { value: 'sector_type', label: 'Sector Type' },
-  { value: 'status_type', label: 'Status Type' },
-  { value: 'temperature_type', label: 'Temperature Type' }
+  { value: 'product_types', label: 'Product Type' },
+  { value: 'customer_types', label: 'Customer Type' },
+  { value: 'delivery_types', label: 'Delivery Type' },
+  { value: 'document_types', label: 'Document Type' },
+  { value: 'location_types', label: 'Location Type' },
+  { value: 'movement_types', label: 'Movement Type' },
+  { value: 'notification_types', label: 'Notification Type' },
+  { value: 'package_types', label: 'Package Type' },
+  { value: 'packaging_box_types', label: 'Packaging Box Type' },
+  { value: 'packaging_materials', label: 'Packaging Material' },
+  { value: 'priority_levels', label: 'Priority Level' },
+  { value: 'product_prices', label: 'Product Price' },
+  { value: 'sector_types', label: 'Sector Type' },
+  { value: 'status_types', label: 'Status Type' },
+  { value: 'temperature_types', label: 'Temperature Type' }
 ];
 
 export default function ConfigPage() {

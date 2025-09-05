@@ -1,33 +1,36 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.type import PackagingMaterial
 from app.schemas.packaging_material import PackagingMaterialCreate, PackagingMaterialUpdate
 
-def get_packaging_material(db: Session, packaging_material_id: int):
-    return db.query(PackagingMaterial).filter(PackagingMaterial.id == packaging_material_id).first()
+async def get_packaging_material(db: AsyncSession, packaging_material_id: int):
+    result = await db.execute(select(PackagingMaterial).filter(PackagingMaterial.id == packaging_material_id))
+    return result.scalar_one_or_none()
 
-def get_packaging_materials(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(PackagingMaterial).offset(skip).limit(limit).all()
+async def get_packaging_materials(db: AsyncSession, skip: int = 0, limit: int = 100):
+    result = await db.execute(select(PackagingMaterial).offset(skip).limit(limit))
+    return result.scalars().all()
 
-def create_packaging_material(db: Session, packaging_material: PackagingMaterialCreate):
+async def create_packaging_material(db: AsyncSession, packaging_material: PackagingMaterialCreate):
     db_packaging_material = PackagingMaterial(**packaging_material.dict())
     db.add(db_packaging_material)
-    db.commit()
-    db.refresh(db_packaging_material)
+    await db.commit()
+    await db.refresh(db_packaging_material)
     return db_packaging_material
 
-def update_packaging_material(db: Session, packaging_material_id: int, packaging_material: PackagingMaterialUpdate):
-    db_packaging_material = db.query(PackagingMaterial).filter(PackagingMaterial.id == packaging_material_id).first()
+async def update_packaging_material(db: AsyncSession, packaging_material_id: int, packaging_material: PackagingMaterialUpdate):
+    db_packaging_material = await get_packaging_material(db, packaging_material_id)
     if db_packaging_material:
         update_data = packaging_material.dict(exclude_unset=True)
         for key, value in update_data.items():
             setattr(db_packaging_material, key, value)
-        db.commit()
-        db.refresh(db_packaging_material)
+        await db.commit()
+        await db.refresh(db_packaging_material)
     return db_packaging_material
 
-def delete_packaging_material(db: Session, packaging_material_id: int):
-    db_packaging_material = db.query(PackagingMaterial).filter(PackagingMaterial.id == packaging_material_id).first()
+async def delete_packaging_material(db: AsyncSession, packaging_material_id: int):
+    db_packaging_material = await get_packaging_material(db, packaging_material_id)
     if db_packaging_material:
-        db.delete(db_packaging_material)
-        db.commit()
+        await db.delete(db_packaging_material)
+        await db.commit()
     return db_packaging_material

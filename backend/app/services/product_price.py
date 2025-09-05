@@ -1,33 +1,36 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.type import ProductPrice
 from app.schemas.product_price import ProductPriceCreate, ProductPriceUpdate
 
-def get_product_price(db: Session, product_price_id: int):
-    return db.query(ProductPrice).filter(ProductPrice.id == product_price_id).first()
+async def get_product_price(db: AsyncSession, product_price_id: int):
+    result = await db.execute(select(ProductPrice).filter(ProductPrice.id == product_price_id))
+    return result.scalar_one_or_none()
 
-def get_product_prices(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(ProductPrice).offset(skip).limit(limit).all()
+async def get_product_prices(db: AsyncSession, skip: int = 0, limit: int = 100):
+    result = await db.execute(select(ProductPrice).offset(skip).limit(limit))
+    return result.scalars().all()
 
-def create_product_price(db: Session, product_price: ProductPriceCreate):
+async def create_product_price(db: AsyncSession, product_price: ProductPriceCreate):
     db_product_price = ProductPrice(**product_price.dict())
     db.add(db_product_price)
-    db.commit()
-    db.refresh(db_product_price)
+    await db.commit()
+    await db.refresh(db_product_price)
     return db_product_price
 
-def update_product_price(db: Session, product_price_id: int, product_price: ProductPriceUpdate):
-    db_product_price = db.query(ProductPrice).filter(ProductPrice.id == product_price_id).first()
+async def update_product_price(db: AsyncSession, product_price_id: int, product_price: ProductPriceUpdate):
+    db_product_price = await get_product_price(db, product_price_id)
     if db_product_price:
         update_data = product_price.dict(exclude_unset=True)
         for key, value in update_data.items():
             setattr(db_product_price, key, value)
-        db.commit()
-        db.refresh(db_product_price)
+        await db.commit()
+        await db.refresh(db_product_price)
     return db_product_price
 
-def delete_product_price(db: Session, product_price_id: int):
-    db_product_price = db.query(ProductPrice).filter(ProductPrice.id == product_price_id).first()
+async def delete_product_price(db: AsyncSession, product_price_id: int):
+    db_product_price = await get_product_price(db, product_price_id)
     if db_product_price:
-        db.delete(db_product_price)
-        db.commit()
+        await db.delete(db_product_price)
+        await db.commit()
     return db_product_price

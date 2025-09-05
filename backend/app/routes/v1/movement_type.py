@@ -1,49 +1,39 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
-
 from app.database import get_db_session
 from app.schemas.movement_type import MovementType, MovementTypeCreate, MovementTypeUpdate
-from app.services.movement_type import (
-    create_movement_type,
-    delete_movement_type,
-    get_movement_type,
-    get_movement_types,
-    update_movement_type,
-)
+import app.services.movement_type as movement_type_service
 
 router = APIRouter()
 
 @router.post("/", response_model=MovementType)
-def create_new_movement_type(
-    movement_type: MovementTypeCreate, db: Session = Depends(get_db_session
-)
+async def create_movement_type(
+    movement_type: MovementTypeCreate, db: AsyncSession = Depends(get_db_session)
 ):
-    return create_movement_type(db=db, movement_type=movement_type)
+    return await movement_type_service.create_movement_type(db=db, movement_type=movement_type)
+
+@router.get("/", response_model=List[MovementType])
+async def read_movement_types(
+    skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db_session)
+):
+    movement_types = await movement_type_service.get_movement_types(db, skip=skip, limit=limit)
+    return movement_types
 
 @router.get("/{movement_type_id}", response_model=MovementType)
-def read_movement_type(movement_type_id: int, db: Session = Depends(get_db_session)):
-    db_movement_type = get_movement_type(db, movement_type_id=movement_type_id)
+async def read_movement_type(movement_type_id: int, db: AsyncSession = Depends(get_db_session)):
+    db_movement_type = await movement_type_service.get_movement_type(db, movement_type_id=movement_type_id)
     if db_movement_type is None:
         raise HTTPException(status_code=404, detail="MovementType not found")
     return db_movement_type
 
-@router.get("/", response_model=List[MovementType])
-def read_movement_types(
-    skip: int = 0, limit: int = 100, db: Session = Depends(get_db_session
-)
-):
-    movement_types = get_movement_types(db, skip=skip, limit=limit)
-    return movement_types
-
 @router.put("/{movement_type_id}", response_model=MovementType)
-def update_existing_movement_type(
+async def update_movement_type(
     movement_type_id: int,
     movement_type: MovementTypeUpdate,
-    db: Session = Depends(get_db_session
-),
+    db: AsyncSession = Depends(get_db_session),
 ):
-    db_movement_type = update_movement_type(
+    db_movement_type = await movement_type_service.update_movement_type(
         db, movement_type_id=movement_type_id, movement_type=movement_type
     )
     if db_movement_type is None:
@@ -51,11 +41,10 @@ def update_existing_movement_type(
     return db_movement_type
 
 @router.delete("/{movement_type_id}", response_model=MovementType)
-def delete_existing_movement_type(
-    movement_type_id: int, db: Session = Depends(get_db_session
-)
+async def delete_movement_type(
+    movement_type_id: int, db: AsyncSession = Depends(get_db_session)
 ):
-    db_movement_type = delete_movement_type(db, movement_type_id=movement_type_id)
+    db_movement_type = await movement_type_service.delete_movement_type(db, movement_type_id=movement_type_id)
     if db_movement_type is None:
         raise HTTPException(status_code=404, detail="MovementType not found")
     return db_movement_type
