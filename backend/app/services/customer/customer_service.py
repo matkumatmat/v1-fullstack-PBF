@@ -29,29 +29,29 @@ class CustomerService(CRUDService):
     
     @transactional
     @audit_log('CREATE', 'Customer')
-    async def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def create(self, data: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """Create customer dengan validation"""
         # Validate customer code uniqueness
         customer_code = data.get('customer_code')
         if customer_code:
             await self._validate_unique_field(Customer, 'customer_code', customer_code,
                                       error_message=f"Customer code '{customer_code}' already exists")
-        
+
         # Validate email uniqueness if provided
         email = data.get('email')
         if email:
             await self._validate_unique_field(Customer, 'email', email,
                                       error_message=f"Email '{email}' already exists")
-        
+
         # Validate customer type and sector type
         await self._validate_customer_type(data.get('customer_type_id'))
         await self._validate_sector_type(data.get('sector_type_id'))
-        
-        return await super().create(data)
-    
+
+        return await super().create(data, **kwargs)
+
     @transactional
     @audit_log('UPDATE', 'Customer')
-    async def update(self, entity_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def update(self, entity_id: int, data: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """Update customer dengan validation"""
         # Validate customer code uniqueness if changed
         customer_code = data.get('customer_code')
@@ -59,38 +59,38 @@ class CustomerService(CRUDService):
             await self._validate_unique_field(Customer, 'customer_code', customer_code,
                                       exclude_id=entity_id,
                                       error_message=f"Customer code '{customer_code}' already exists")
-        
+
         # Validate email uniqueness if changed
         email = data.get('email')
         if email:
             await self._validate_unique_field(Customer, 'email', email,
                                       exclude_id=entity_id,
                                       error_message=f"Email '{email}' already exists")
-        
+
         # Validate references if changed
         if data.get('customer_type_id'):
             await self._validate_customer_type(data.get('customer_type_id'))
         if data.get('sector_type_id'):
             await self._validate_sector_type(data.get('sector_type_id'))
-        
-        return await super().update(entity_id, data)
-    
+
+        return await super().update(entity_id, data, **kwargs)
+
     async def get_by_code(self, customer_code: str) -> Dict[str, Any]:
         """Get customer by customer code"""
         result = await self.db_session.execute(
             select(Customer).filter(Customer.customer_code == customer_code)
         )
         customer = result.scalars().first()
-        
+
         if not customer:
             raise NotFoundError('Customer', customer_code)
-        
-        return self.response_schema().dump(customer)
-    
+
+        return self.response_schema.model_validate(customer).model_dump()
+
     async def search_customers(self, search_term: str, limit: int = 20) -> List[Dict[str, Any]]:
         """Search customers by name or code"""
         stmt = select(Customer).filter(Customer.is_active == True)
-        
+
         if search_term:
             from sqlalchemy import or_
             search_filter = or_(
@@ -99,21 +99,21 @@ class CustomerService(CRUDService):
                 Customer.legal_name.ilike(f'%{search_term}%')
             )
             stmt = stmt.filter(search_filter)
-        
+
         result = await self.db_session.execute(stmt.limit(limit))
         customers = result.scalars().all()
-        return self.response_schema(many=True).dump(customers)
-    
+        return [self.response_schema.model_validate(c).model_dump() for c in customers]
+
     async def get_customers_by_type(self, customer_type_id: int) -> List[Dict[str, Any]]:
         """Get customers by customer type"""
         stmt = select(Customer).filter(
             and_(Customer.customer_type_id == customer_type_id, Customer.is_active == True)
         ).order_by(Customer.name.asc())
-        
+
         result = await self.db_session.execute(stmt)
         customers = result.scalars().all()
-        return self.response_schema(many=True).dump(customers)
-    
+        return [self.response_schema.model_validate(c).model_dump() for c in customers]
+
     async def get_tender_eligible_customers(self) -> List[Dict[str, Any]]:
         """Get customers yang eligible untuk tender"""
         stmt = select(Customer).filter(
@@ -123,31 +123,31 @@ class CustomerService(CRUDService):
                 Customer.status == 'ACTIVE'
             )
         ).order_by(Customer.name.asc())
-        
+
         result = await self.db_session.execute(stmt)
         customers = result.scalars().all()
-        return self.response_schema(many=True).dump(customers)
-    
+        return [self.response_schema.model_validate(c).model_dump() for c in customers]
+
     async def get_customer_summary(self, customer_id: int) -> Dict[str, Any]:
         """Get customer summary dengan related data"""
         customer = await self._get_or_404(Customer, customer_id)
-        
+
         # Get addresses
         result = await self.db_session.execute(
             select(CustomerAddress).filter(CustomerAddress.customer_id == customer_id)
         )
         addresses = result.scalars().all()
-        
+
         # Get orders summary (if you have orders)
         # This would be implemented when you have sales order service
-        
+
         return {
-            'customer': self.response_schema().dump(customer),
-            'addresses': [addr.__dict__ for addr in addresses],
+            'customer': self.response_schema.model_validate(customer).model_dump(),
+            'addresses': [self.response_schema.model_validate(addr).model_dump() for addr in addresses],
             'summary': {
                 'total_addresses': len(addresses),
-                'default_address': next((addr for addr in addresses if addr.is_default), None),
-                'delivery_addresses': [addr for addr in addresses if addr.address_type == 'DELIVERY']
+                'default_address': next((self.response_schema.model_validate(addr).model_dump() for addr in addresses if addr.is_default), None),
+                'delivery_addresses': [self.response_schema.model_validate(addr).model_dump() for addr in addresses if addr.address_type == 'DELIVERY']
             }
         }
     

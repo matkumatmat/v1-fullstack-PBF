@@ -34,34 +34,34 @@ class ProductService(CRUDService):
     
     @transactional
     @audit_log('CREATE', 'Product')
-    async def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def create(self, data: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """Create new product with validation"""
         # Validate product code uniqueness
         product_code = data.get('product_code')
         if product_code:
             await self._validate_unique_field(Product, 'product_code', product_code,
                                       error_message=f"Product code '{product_code}' already exists")
-        
+
         # Validate references exist
         await self._validate_product_type(data.get('product_type_id'))
         if data.get('package_type_id'):
             await self._validate_package_type(data.get('package_type_id'))
         if data.get('temperature_type_id'):
             await self._validate_temperature_type(data.get('temperature_type_id'))
-        
-        return await super().create(data)
-    
+
+        return await super().create(data, **kwargs)
+
     @transactional
     @audit_log('UPDATE', 'Product')
-    async def update(self, entity_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def update(self, entity_id: int, data: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """Update product with validation"""
         # Validate product code uniqueness if changed
         product_code = data.get('product_code')
         if product_code:
-            await self._validate_unique_field(Product, 'product_code', product_code, 
+            await self._validate_unique_field(Product, 'product_code', product_code,
                                       exclude_id=entity_id,
                                       error_message=f"Product code '{product_code}' already exists")
-        
+
         # Validate references exist
         if data.get('product_type_id'):
             await self._validate_product_type(data.get('product_type_id'))
@@ -69,25 +69,25 @@ class ProductService(CRUDService):
             await self._validate_package_type(data.get('package_type_id'))
         if data.get('temperature_type_id'):
             await self._validate_temperature_type(data.get('temperature_type_id'))
-        
-        return await super().update(entity_id, data)
-    
+
+        return await super().update(entity_id, data, **kwargs)
+
     async def get_by_code(self, product_code: str) -> Dict[str, Any]:
         """Get product by product code"""
         result = await self.db_session.execute(
             select(Product).filter(Product.product_code == product_code)
         )
         product = result.scalars().first()
-        
+
         if not product:
             raise NotFoundError('Product', product_code)
-        
-        return self.response_schema().dump(product)
-    
+
+        return self.response_schema.model_validate(product).model_dump()
+
     async def search_products(self, search_term: str, limit: int = 20) -> List[Dict[str, Any]]:
         """Search products by name, code, or generic name"""
         query = select(Product).filter(Product.is_active == True)
-        
+
         if search_term:
             search_filter = or_(
                 Product.name.ilike(f'%{search_term}%'),
@@ -95,41 +95,41 @@ class ProductService(CRUDService):
                 Product.generic_name.ilike(f'%{search_term}%')
             )
             query = query.filter(search_filter)
-        
+
         result = await self.db_session.execute(query.limit(limit))
         products = result.scalars().all()
-        return self.response_schema(many=True).dump(products)
-    
+        return [self.response_schema.model_validate(p).model_dump() for p in products]
+
     async def get_product_stock_summary(self, product_id: int) -> Dict[str, Any]:
         """Get stock summary untuk product"""
         from ...models import Batch, Allocation
-        
+
         product = await self._get_or_404(Product, product_id)
-        
+
         # Get all batches for this product
         batches_query = select(Batch).filter(
             Batch.product_id == product_id,
             Batch.status == 'ACTIVE'
         )
-        
+
         batches_result = await self.db_session.execute(batches_query)
         batches = batches_result.scalars().all()
         total_received = sum(batch.received_quantity for batch in batches)
-        
+
         # Get all allocations for this product
         allocations_query = select(Allocation).join(Batch).filter(
             Batch.product_id == product_id,
             Allocation.status == 'active'
         )
-        
+
         allocations_result = await self.db_session.execute(allocations_query)
         allocations = allocations_result.scalars().all()
         total_allocated = sum(alloc.allocated_quantity for alloc in allocations)
         total_shipped = sum(alloc.shipped_quantity for alloc in allocations)
         total_available = total_allocated - total_shipped
-        
+
         return {
-            'product': self.response_schema().dump(product),
+            'product': self.response_schema.model_validate(product).model_dump(),
             'stock_summary': {
                 'total_received': total_received,
                 'total_allocated': total_allocated,
