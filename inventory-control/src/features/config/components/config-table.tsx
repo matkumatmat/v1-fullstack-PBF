@@ -1,23 +1,36 @@
-// Fixed Config Table - Now compatible with your DataTable component
 // inventory-control/src/features/config/components/config-table.tsx
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/table/data-table';
-import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
-import { ColumnDef } from '@tanstack/react-table';
-import { 
-  useReactTable,
+import { useMemo } from 'react';
+import {
+  ColumnDef,
+  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   getFacetedRowModel,
-  getFacetedUniqueValues
+  getFacetedUniqueValues,
+  useReactTable,
 } from '@tanstack/react-table';
-import { useMemo } from 'react';
-import { ConfigFormDialog } from './config-form-dialog';
 
+// 1. Import komponen tabel dari shadcn/ui
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import { Button } from '@/components/ui/button';
+import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
+import { DataTablePagination } from '@/components/ui/table/data-table-pagination';
+import { ConfigFormDialog } from './config-form-dialog';
+import { Card, CardContent } from '@/components/ui/card';
+
+// --- Interface tidak berubah ---
 interface ConfigItem {
   id: number;
   code: string;
@@ -32,12 +45,14 @@ interface ConfigTableProps {
   isLoading?: boolean;
 }
 
+// --- Logika komponen tetap sama ---
 export function ConfigTable({ data, onSave, onDelete, isLoading = false }: ConfigTableProps) {
   const columns = useMemo<ColumnDef<ConfigItem>[]>(
     () => [
       {
         accessorKey: 'code',
         header: 'Code',
+        size:6,
         cell: ({ row }) => (
           <span className="font-mono text-sm">{row.getValue('code')}</span>
         ),
@@ -48,17 +63,20 @@ export function ConfigTable({ data, onSave, onDelete, isLoading = false }: Confi
         }
       },
       {
-        accessorKey: 'name',
+        accessorKey: 'name',  
         header: 'Name',
+        size : 10,
+        cell: ({ row }) => <div>{row.getValue('name')}</div>,
         meta: {
           label: 'Name',
-          variant: 'text',
+          variant: 'text', 
           placeholder: 'Search by name...'
         }
       },
       {
         accessorKey: 'description',
-        header: 'Description',
+        header: 'Description', 
+        size : 100,
         cell: ({ row }) => {
           const description = row.getValue('description') as string;
           return (
@@ -76,10 +94,11 @@ export function ConfigTable({ data, onSave, onDelete, isLoading = false }: Confi
       {
         id: 'actions',
         header: 'Actions',
+        size : 20,
         cell: ({ row }) => {
           const item = row.original;
           return (
-            <div className='flex space-x-2'>
+            <div className='flex space-x-2 justify-center'>
               <ConfigFormDialog 
                 onSave={onSave} 
                 item={item} 
@@ -104,19 +123,80 @@ export function ConfigTable({ data, onSave, onDelete, isLoading = false }: Confi
   );
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    getFilteredRowModel: getFilteredRowModel(), 
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
   });
 
+  // 2. Ganti bagian return dengan struktur tabel eksplisit
   return (
-    <DataTable table={table}>
+    <div className="space-y-4 w-full">
       <DataTableToolbar table={table} />
-    </DataTable>
+      <Card>
+        <CardContent className="p-0">
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      No results.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+      <DataTablePagination table={table} />
+    </div>
   );
 }
