@@ -6,6 +6,7 @@ from sqlalchemy import(
 )
 from sqlalchemy.orm import relationship
 from .base import BaseModel
+from .order_process import sales_order_item_sector_association, sales_order_item_allocation_association
 
 #===PRODUCT ENUMS===#   
 class ProductType(BaseModel):
@@ -52,6 +53,7 @@ class TemperatureType(BaseModel):
     
     # Relationships
     products = relationship('Product', back_populates='temperature_type')
+    warehouses = relationship('Warehouse', back_populates='temperature_type')
     
     def __repr__(self):
         return f'<TemperatureType {self.code}: {self.name}>'
@@ -66,24 +68,15 @@ class AllocationType(BaseModel):
     icon = Column(String(50))
 
     allocations = relationship('Allocation', back_populates='allocation_type')
+    sales_order_items = relationship(
+        'SalesOrderItem',
+        secondary=sales_order_item_allocation_association,
+        back_populates='allocations'
+    )    
     
     def __repr__(self):
         return f'<AllocationType {self.code}: {self.name}>'
     
-class MovementType(BaseModel):
-    __tablename__ = 'movement_types'
-    code = Column(String(10), unique=True, nullable=False, index=True)
-    name = Column(String(50), unique=True, nullable=False)
-    description = Column(Text)
-    direction = Column(String(10), nullable=False)  # IN, OUT, TRANSFER
-    auto_generate_document = Column(Boolean, default=False)
-    document_prefix = Column(String(10))
-
-    stock_movements = relationship('StockMovement', back_populates='movement_type')
-    
-    def __repr__(self):
-        return f'<MovementType {self.code}: {self.name}>'
-
 class SectorType(BaseModel):
     __tablename__ = 'sector_types'
     code = Column(String(10), unique=True, nullable=False, index=True)
@@ -100,6 +93,11 @@ class SectorType(BaseModel):
     special_documentation = Column(Text)
     
     customers = relationship('Customer', back_populates='sector_type')
+    sales_order_items = relationship(
+        'SalesOrderItem',
+        secondary=sales_order_item_sector_association,
+        back_populates='sectors'
+    )    
     
     def __repr__(self):
         return f'<SectorType {self.code}: {self.name}>'
@@ -293,21 +291,33 @@ class DeliveryType(BaseModel):
     def __repr__(self):
         return f'<DeliveryMethod {self.name}>'
     
-class ProductPriceType(BaseModel):
-    __tablename__ = 'product_type_prices'
+class ProductPrice(BaseModel):
+    __tablename__ = 'product_prices'
 
     code = Column(String(50), unique=True, nullable=False, index=True)
     name = Column(String(100))
-
     product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    product = relationship('Product', back_populates='product_price')
-
     effective_date = Column(Date, nullable=False)
-
-    # Assuming HNA, HJP, HET are prices (Harga)
-    HNA = Column(Numeric(15, 2))  # Harga Netto Apotek
-    HJP = Column(Numeric(15, 2))  # Harga Jual Pabrik
-    HET = Column(Numeric(15, 2))  # Harga Eceran Tertinggi
+    HNA = Column(Numeric(15, 2))
+    HJP = Column(Numeric(15, 2))
+    HET = Column(Numeric(15, 2))
+    
+    product = relationship('Product', back_populates='prices')
+    sales_order_items = relationship('SalesOrderItem', back_populates='product_price_entry')
 
     def __repr__(self):
-        return f'<ProductPrice {self.code} for {self.product.name}>'    
+        return f'<ProductPrice {self.code} for {self.product.name}>'   
+    
+class MovementType(BaseModel):
+    __tablename__ = 'movement_types'
+    code = Column(String(10), unique=True, nullable=False, index=True)
+    name = Column(String(50), unique=True, nullable=False)
+    description = Column(Text)
+    direction = Column(String(10), nullable=False)  # IN, OUT, TRANSFER
+    auto_generate_document = Column(Boolean, default=False)
+    document_prefix = Column(String(10))
+
+    stock_movements = relationship('StockMovement', back_populates='movement_type')
+    
+    def __repr__(self):
+        return f'<MovementType {self.code}: {self.name}>'

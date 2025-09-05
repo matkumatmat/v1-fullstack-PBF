@@ -2,16 +2,39 @@ import uuid
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, ForeignKey, Text, DateTime, Date, Numeric, Boolean,
-    func
+    func, Table
 )
 from sqlalchemy.orm import relationship
 from .base import BaseModel
+from .type import SectorType, AllocationType
+
+
+##====perantara===#
+from sqlalchemy import Table, Column, Integer, ForeignKey
+from .base import BaseModel
+
+# Tabel perantara untuk SalesOrderItem <-> SectorType
+sales_order_item_sector_association = Table(
+    'so_item_sector_association',
+    BaseModel.metadata,
+    Column('sales_order_item_id', Integer, ForeignKey('sales_order_items.id'), primary_key=True),
+    Column('sector_type_id', Integer, ForeignKey('sector_types.id'), primary_key=True)
+)
+
+# Tabel perantara untuk SalesOrderItem <-> AllocationType
+sales_order_item_allocation_association = Table(
+    'so_item_allocation_association',
+    BaseModel.metadata,
+    Column('sales_order_item_id', Integer, ForeignKey('sales_order_items.id'), primary_key=True),
+    Column('allocation_type_id', Integer, ForeignKey('allocation_types.id'), primary_key=True)
+)   
 
 class SalesOrder(BaseModel):
     __tablename__ = 'sales_order'
     public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
     so_number = Column(String(50), nullable=False, index=True)
     customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
+    customer = relationship('Customer', back_populates='sales_orders')
     so_date = Column(Date, nullable=False)
     total_amount = Column(Numeric(15, 2))
     status = Column(String(50), default='PENDING', nullable=False)  
@@ -20,15 +43,10 @@ class SalesOrder(BaseModel):
     special_instructions = Column(Text)
     items = relationship('SalesOrderItem', back_populates='sales_order', cascade='all, delete-orphan')
     shipping_plan = relationship('ShippingPlan', back_populates='sales_order')
-
     tender_contract_id = Column(Integer, ForeignKey('tender_contracts.id'), nullable=True)
     tender_contract = relationship('TenderContract', back_populates='sales_order')
-    
-    # The relationship to packing will be managed through PackingOrder
     packing_orders = relationship('PackingOrder', back_populates='sales_order')
-    
     is_tender_so = Column(Boolean, default=False)
-    
     @property
     def so_type(self):
         return 'TENDER' if self.is_tender_so else 'REGULAR'    
@@ -56,32 +74,45 @@ class SalesOrder(BaseModel):
 
 class SalesOrderItem(BaseModel):
     __tablename__ = 'sales_order_items'
+    
     line_number = Column(Integer)
     quantity_requested = Column(Integer, nullable=False)
-    unit_price = Column(Numeric(12, 2))
+    unit_price = Column(Numeric(12, 2), nullable=False)
     total_price = Column(Numeric(15, 2))
     product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    product = relationship('Product', back_populates='sales_order_items')
     sales_order_id = Column(Integer, ForeignKey('sales_order.id'), nullable=False)
-    sales_order = relationship('SalesOrder', back_populates='items')
     required_delivery_date = Column(Date)
-    status = Column(String(50), default='PENDING')  # PENDING, PLANNED, COMPLETED
+    status = Column(String(50), default='PENDING')
+    price_type_code_used = Column(String(20), nullable=False)
+    product_price_id = Column(Integer, ForeignKey('product_prices.id'), nullable=True)
 
+    product = relationship('Product', back_populates='sales_order_items')
+    sales_order = relationship('SalesOrder', back_populates='items')
+    product_price_entry = relationship('ProductPrice', back_populates='sales_order_items')
     shipping_plan_items = relationship('ShippingPlanItem', back_populates='sales_order_item', cascade='all, delete-orphan')
+    
+    sectors = relationship(
+        'SectorType',
+        secondary=sales_order_item_sector_association,
+        back_populates='sales_order_items'
+    )
+    
+    allocations = relationship(
+        'AllocationType',
+        secondary=sales_order_item_allocation_association,
+        back_populates='sales_order_items'
+    )
     
     @property
     def quantity_planned(self):
-        """Total quantity yang sudah masuk shipping plan"""
         return sum(spi.quantity_to_fulfill for spi in self.shipping_plan_items)
     
     @property
     def quantity_remaining(self):
-        """Quantity yang belum direncanakan"""
         return self.quantity_requested - self.quantity_planned
     
     @property
     def is_fully_planned(self):
-        """Apakah item sudah fully planned"""
         return self.quantity_planned >= self.quantity_requested
     
     def __repr__(self):
@@ -161,3 +192,6 @@ class ShippingPlanItem(BaseModel):
     
     def __repr__(self):
         return f'<ShippingPlanItem {self.shipping_plan.plan_number}-{self.line_number}>'
+    
+
+ 

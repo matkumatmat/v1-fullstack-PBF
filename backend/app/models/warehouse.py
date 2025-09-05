@@ -13,7 +13,8 @@ class Warehouse(BaseModel):
     code = Column(String(10), unique=True, nullable=False)
     address = Column(Text)
     status = Column(String(50), default='active')
-    
+    temperature_type_id = Column(Integer, ForeignKey('temperature_types.id'), nullable=True)
+    temperature_type = relationship('TemperatureType', back_populates='warehouses')
     racks = relationship('Rack', back_populates='warehouse')
 
 class Rack(BaseModel):

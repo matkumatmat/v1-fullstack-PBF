@@ -16,83 +16,48 @@ class Shipment(BaseModel):
     
     public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
     shipment_number = Column(String(50), unique=True, nullable=False, index=True)
-    
-    # Reference ke shipping plan yang jadi dasar shipment
     shipping_plan_id = Column(Integer, ForeignKey('shipping_plans.id'), nullable=False)
-    
-    # Customer info (dari shipping plan, tapi dicopy untuk kemudahan)
     customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
-    
-    # Shipping details
     tracking_number = Column(String(100), unique=True, nullable=True, index=True)
     carrier = Column(String(100))
     shipping_method = Column(String(50))  # Express, Regular, Economy
-    
-    # Dates
     shipment_date = Column(Date)
     estimated_delivery_date = Column(Date)
     actual_delivery_date = Column(Date)
-    
-    # Status tracking
-    status = Column(String(50), default='PREPARING', nullable=False)
-    # PREPARING, READY_TO_SHIP, SHIPPED, IN_TRANSIT, DELIVERED, CANCELLED, RETURNED
-    
-    # Address information
     delivery_address = Column(Text)
     pickup_address = Column(Text)
     contact_person = Column(String(100))
     contact_phone = Column(String(20))
     contact_email = Column(String(100))
-    
-    # Package information
     total_weight = Column(Float)  # Total weight in kg
     total_volume = Column(Float)  # Total volume in m3
     total_boxes = Column(Integer, default=0)
-    
-    # Cost information
     shipping_cost = Column(Numeric(12, 2))
     insurance_cost = Column(Numeric(12, 2))
     total_value = Column(Numeric(15, 2))  # Total value of goods
-    
-    # Tracking
     created_by = Column(String(50))  # User yang create shipment
     created_date = Column(DateTime, default=func.current_timestamp())
     shipped_by = Column(String(50))  # User yang confirm shipping
     shipped_date = Column(DateTime)
-    
-    # Special instructions
     delivery_instructions = Column(Text)
     handling_instructions = Column(Text)
     notes = Column(Text)
-    
-    # External references
     courier_booking_id = Column(String(100))  # ID booking di sistem courier
     pod_document_url = Column(String(255))  # Proof of Delivery document
-    
-    # Relationships
-    shipping_plan = relationship('ShippingPlan', back_populates='shipment')
+    shipping_plan = relationship('ShippingPlanx', back_populates='shipment')
     customer = relationship('Customer')
     picking_orders = relationship('PickingOrder', back_populates='shipment')
     documents = relationship('ShipmentDocument', back_populates='shipment', cascade='all, delete-orphan')
     tracking_events = relationship('ShipmentTracking', back_populates='shipment', cascade='all, delete-orphan')
     consignments = relationship('Consignment', back_populates='shipment')
-
-    # ENHANCED: PS reference (main reference untuk shipment)
     packing_slip_id = Column(Integer, ForeignKey('packing_slips.id'), nullable=False)
     packing_slip = relationship('PackingSlip', back_populates='shipments')
-    
-    # ENHANCED: Flexible delivery address
-    # Option 1: Use customer address
     delivery_address_id = Column(Integer, ForeignKey('customer_addresses.id'), nullable=True)
     delivery_address = relationship('CustomerAddress', back_populates='shipments')
-    
-    # Option 2: Custom delivery address (override customer address)
     custom_delivery_address = Column(Text, nullable=True)
     custom_contact_person = Column(String(100))
     custom_contact_phone = Column(String(20))
     custom_delivery_instructions = Column(Text)
-    
-    # Flag to determine which address to use
     use_custom_address = Column(Boolean, default=False)
     
     # Properties untuk final delivery info

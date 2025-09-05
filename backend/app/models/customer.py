@@ -11,25 +11,16 @@ class Customer(BaseModel):
     __tablename__ = 'customers'
     
     public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
-    
-    # Basic info
     code = Column(String(20), unique=True, nullable=False, index=True)
     name = Column(String(100), nullable=False)
-    
-    # Types
     customer_type_id = Column(Integer, ForeignKey('customer_types.id'), nullable=False)
     customer_type = relationship('CustomerType', back_populates='customers')
-    
     sector_type_id = Column(Integer, ForeignKey('sector_types.id'), nullable=False)
     sector_type = relationship('SectorType', back_populates='customers')
-    
-    # Relationships
     sales_orders = relationship('SalesOrder', back_populates='customer')
     allocations = relationship('Allocation', back_populates='customer')
     consignment_agreements = relationship('ConsignmentAgreement', back_populates='customer')
     consignment_statements = relationship('ConsignmentStatement', back_populates='customer')    
-
-    # TAMBAHAN: Enhanced relationships
     addresses = relationship('CustomerAddress', back_populates='customer', cascade='all, delete-orphan')
     
     @property

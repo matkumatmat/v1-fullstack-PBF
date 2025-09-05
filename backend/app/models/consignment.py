@@ -10,37 +10,29 @@ from .base import BaseModel
 class ConsignmentAgreement(BaseModel):
     """Model untuk Perjanjian Konsinyasi dengan Customer"""
     __tablename__ = 'consignment_agreements'
-    
     public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
     agreement_number = Column(String(50), unique=True, nullable=False, index=True)
-    
     # Customer information
     customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
     customer = relationship('Customer', back_populates='consignment_agreements')
-    
     # Agreement details
     agreement_date = Column(Date, nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date)
-    
     # Terms and conditions
     commission_rate = Column(Numeric(5, 2))  # Percentage commission
     payment_terms_days = Column(Integer, default=30)
     return_policy_days = Column(Integer, default=90)  # Max days untuk return
-    
     # Status
     status = Column(String(20), default='ACTIVE')  # ACTIVE, SUSPENDED, TERMINATED, EXPIRED
-    
     # Document references
     contract_document_url = Column(String(255))
     terms_document_url = Column(String(255))
-    
     # Tracking
     created_by = Column(String(50))
     created_date = Column(DateTime, default=func.current_timestamp())
     approved_by = Column(String(50))
     approved_date = Column(DateTime)
-    
     # Relationships
     consignments = relationship('Consignment', back_populates='agreement')
     
@@ -56,32 +48,25 @@ class Consignment(BaseModel):
     
     public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
     consignment_number = Column(String(50), unique=True, nullable=False, index=True)
-    
     # Agreement reference
     agreement_id = Column(Integer, ForeignKey('consignment_agreements.id'), nullable=False)
     agreement = relationship('ConsignmentAgreement', back_populates='consignments')
-    
     # Allocation reference (Consignment adalah tipe allocation khusus)
     allocation_id = Column(Integer, ForeignKey('allocations.id'), nullable=False)
     allocation = relationship('Allocation', back_populates='consignments')
-    
     # Shipment reference (ketika consignment dikirim)
     shipment_id = Column(Integer, ForeignKey('shipments.id'), nullable=True)
     shipment = relationship('Shipment', back_populates='consignments')
-    
     # Consignment details
     consignment_date = Column(Date, nullable=False)
     expected_return_date = Column(Date)
     actual_return_date = Column(Date)
-    
     # Financial tracking
     total_value = Column(Numeric(15, 2))  # Total value produk yang dikonsinyasi
     commission_rate = Column(Numeric(5, 2))  # Rate komisi untuk consignment ini
-    
     # Status tracking
     status = Column(String(20), default='PENDING', nullable=False)
     # PENDING, SHIPPED, RECEIVED_BY_CUSTOMER, PARTIALLY_SOLD, FULLY_SOLD, RETURNED, CANCELLED
-    
     # Notes
     notes = Column(Text)
     terms_conditions = Column(Text)

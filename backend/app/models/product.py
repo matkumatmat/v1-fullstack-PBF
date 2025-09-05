@@ -8,7 +8,6 @@ from .base import BaseModel
 
 class Product(BaseModel):
     __tablename__ = 'products'
-    
     public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
     product_code = Column(String(25), unique=True, nullable=False, index=True)
     name = Column(String(100), nullable=False)
@@ -24,7 +23,11 @@ class Product(BaseModel):
     
     sales_order_items = relationship('SalesOrderItem', back_populates='product')
     picking_order_items = relationship('PickingOrderItem', back_populates='product')
-    product_price = relationship('ProductPrices', back_populates='product')
+    prices = relationship('ProductPrice', back_populates='product', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Product {self.product_code} - {self.name}>'
+
 
 class Batch(BaseModel):
     __tablename__ = 'batches'
@@ -83,8 +86,6 @@ class Allocation(BaseModel):
     shipped_quantity = Column(Integer, default=0)   
     reserved_quantity = Column(Integer, default=0)
     status = Column(String(50), default='active')
-
-    # Tambahan dari skema
     allocation_number = Column(String(50), unique=True, nullable=True, index=True)
     allocation_date = Column(Date, nullable=False, default=func.current_date())
     expiry_date = Column(Date)
