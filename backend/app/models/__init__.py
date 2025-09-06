@@ -1,5 +1,8 @@
 from .base import BaseModel
 from .order_process import SalesOrder, SalesOrderItem, ShippingPlan, ShippingPlanItem
+from .customer import Customer, CustomerAddress
+from .product import Product,Batch,Allocation
+from .warehouse import Warehouse, Rack, RackAllocation
 from .type import (
     ProductType,
     PackageType,
@@ -22,35 +25,10 @@ from .type import (
 __all__ = [
     "BaseModel",
     "User",
-    "ActivityLog",
-    "Consignment",
-    "ConsignmentItem",
-    "ConsignmentStatusHistory",
-    "Contract",
     "Customer",
-    "StockMovement",
-    "MovementLog",
+    "CustomerAddress",
     "SalesOrder",
     "SalesOrderItem",
-    "PickingList",
-    "PickingListItem",
-    "Shipment",
-    "ShipmentItem",
-    "PackingList",
-    "PackingListItem",
-    "PackingSlip",
-    "PackingSlipItem",
-    "Product",
-    "ProductCategory",
-    "ProductUoM",
-    "ShipmentDocument",
-    "Shipping",
-    "ShippingItem",
-    "TrackTrace",
-    "Warehouse",
-    "Location",
-    "Inventory",
-    "Allocation",
     "ProductType",
     "PackageType",
     "TemperatureType",
@@ -67,4 +45,12 @@ __all__ = [
     "DeliveryType",
     "ProductPrice",
     "MovementType",
+    "ShippingPlan",
+    "ShippingPlanItem",
+    "Product",
+    "Batch",
+    "Allocation",
+    "Warehouse",
+    "Rack",
+    "RackAllocation"
 ]

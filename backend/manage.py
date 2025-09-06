@@ -54,7 +54,7 @@ def run(
     Runs the development server.
     """
     typer.echo(f"🚀 Starting server on http://{host}:{port}")
-    uvicorn.run("app:create_app", factory=True, host=host, port=port, reload=reload)
+    uvicorn.run("app:main", factory=True, host=host, port=port, reload=reload)
 
 
 if __name__ == "__main__":
