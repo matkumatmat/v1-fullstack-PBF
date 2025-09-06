@@ -16,6 +16,7 @@ from . import (
     delivery_type,
     product_price,
     movement_type,
+    warehouse_routes,     
 )
 
 api_router = APIRouter()
@@ -36,3 +37,6 @@ api_router.include_router(notification_type.router, prefix="/notification_types"
 api_router.include_router(delivery_type.router, prefix="/delivery_types", tags=["delivery_types"])
 api_router.include_router(product_price.router, prefix="/product_prices", tags=["product_prices"])
 api_router.include_router(movement_type.router, prefix="/movement_types", tags=["movement_types"])
+api_router.include_router(warehouse_routes.router_warehouses, prefix="/warehouses", tags=["Warehouses"])
+api_router.include_router(warehouse_routes.router_racks, prefix="/racks", tags=["Racks"])
+api_router.include_router(warehouse_routes.router_rack_allocations, prefix="/rack_allocations", tags=["Rack Allocations"])
