@@ -1,20 +1,12 @@
-// inventory-control/src/features/config/components/config-table.tsx
 'use client';
 
-import { useMemo } from 'react';
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
   useReactTable,
 } from '@tanstack/react-table';
 
-// 1. Import komponen tabel dari shadcn/ui
 import {
   Table,
   TableBody,
@@ -22,181 +14,172 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { DataTableToolbar } from '@/components/ui/table/data-table-toolbar';
-import { DataTablePagination } from '@/components/ui/table/data-table-pagination';
+import { useMemo } from 'react';
 import { ConfigFormDialog } from './config-form-dialog';
-import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { getMetadataForType } from '../config-metadata';
 
-// --- Interface tidak berubah ---
 interface ConfigItem {
   id: number;
   code: string;
   name: string;
   description?: string | null;
+  [key: string]: any;
 }
 
 interface ConfigTableProps {
   data: ConfigItem[];
+  selectedType: string;
   onSave: (data: any) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
   isLoading?: boolean;
 }
 
-// --- Logika komponen tetap sama ---
-export function ConfigTable({ data, onSave, onDelete, isLoading = false }: ConfigTableProps) {
-  const columns = useMemo<ColumnDef<ConfigItem>[]>(
-    () => [
+export function ConfigTable({
+  data,
+  selectedType,
+  onSave,
+  onDelete,
+  isLoading = false,
+}: ConfigTableProps) {
+  const handleDelete = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this item?')) {
+      try {
+        await onDelete(id);
+        toast.success('Item deleted successfully!');
+      } catch (error) {
+        toast.error('Failed to delete item.');
+        console.error('Delete error:', error);
+      }
+    }
+  };
+
+  const columns = useMemo<ColumnDef<ConfigItem>[]>(() => {
+    // Kolom dasar yang selalu ada
+    const baseColumns: ColumnDef<ConfigItem>[] = [
       {
         accessorKey: 'code',
         header: 'Code',
-        size:6,
-        cell: ({ row }) => (
-          <span className="font-mono text-sm">{row.getValue('code')}</span>
-        ),
+        cell: info => <span className="font-mono">{info.getValue<string>()}</span>,
+        // DIUBAH: Menambahkan metadata untuk styling lebar kolom
         meta: {
-          label: 'Code',
-          variant: 'text',
-          placeholder: 'Search by code...'
-        }
+          className: 'px-2 w-[30px]',
+        },
       },
       {
-        accessorKey: 'name',  
+        accessorKey: 'name',
         header: 'Name',
-        size : 10,
-        cell: ({ row }) => <div>{row.getValue('name')}</div>,
-        meta: {
-          label: 'Name',
-          variant: 'text', 
-          placeholder: 'Search by name...'
-        }
       },
       {
         accessorKey: 'description',
-        header: 'Description', 
-        size : 100,
-        cell: ({ row }) => {
-          const description = row.getValue('description') as string;
-          return (
-            <span className="text-muted-foreground">
-              {description || 'No description'}
-            </span>
-          );
-        },
-        meta: {
-          label: 'Description',
-          variant: 'text',
-          placeholder: 'Search by description...'
-        }
+        header: 'Description',
+        cell: info => <span className="text-sm text-muted-foreground">{info.getValue<string>() || '-'}</span>,
       },
-      {
-        id: 'actions',
-        header: 'Actions',
-        size : 20,
-        cell: ({ row }) => {
-          const item = row.original;
-          return (
-            <div className='flex space-x-2 justify-center'>
-              <ConfigFormDialog 
-                onSave={onSave} 
-                item={item} 
-                isLoading={isLoading}
-              />
-              <Button 
-                variant='destructive' 
-                size='sm'
-                onClick={() => onDelete(item.id)}
-                disabled={isLoading}
-              >
-                Delete
-              </Button>
-            </div>
-          );
-        },
-        enableSorting: false,
-        enableHiding: false
-      }
-    ],
-    [onSave, onDelete, isLoading]
-  );
+    ];
+
+    // Dapatkan field tambahan dari metadata
+    const additionalFields = getMetadataForType(selectedType);
+
+    const dynamicColumns: ColumnDef<ConfigItem>[] = additionalFields.map(field => ({
+      accessorKey: field.key,
+      header: field.label,
+      cell: ({ row }) => {
+        const value = row.getValue(field.key);
+        if (field.type === 'boolean') {
+          return value ? 'Yes' : 'No';
+        }
+        // Tampilkan '-' jika nilai null atau undefined
+        return <span>{value !== null && value !== undefined ? String(value) : '-'}</span>;
+      },
+    }));
+
+    // Kolom aksi
+    const actionColumn: ColumnDef<ConfigItem> = {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => {
+        const item = row.original;
+        return (
+          <div className="flex space-x-1 justify-center">
+            <ConfigFormDialog
+              onSave={onSave}
+              item={item}
+              isLoading={isLoading}
+              selectedType={selectedType}
+            />
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => handleDelete(item.id)}
+              disabled={isLoading}
+            >
+              Delete
+            </Button>
+          </div>
+        );
+      },
+      // DIUBAH: Menambahkan metadata untuk styling lebar dan perataan kolom
+      meta: {
+        className: 'flex-wrap w-[80px] text-center',
+      },
+    };
+
+    return [...baseColumns, ...dynamicColumns, actionColumn];
+  }, [onSave, onDelete, isLoading, selectedType, data]);
+
 
   const table = useReactTable({
-    data: data || [],
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(), 
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
   });
 
-  // 2. Ganti bagian return dengan struktur tabel eksplisit
   return (
-    <div className="space-y-4 w-full">
-      <DataTableToolbar table={table} />
-      <Card>
-        <CardContent className="p-0">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map(headerGroup => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                // DIUBAH: Menerapkan className dari metadata ke header
+                <TableHead key={header.id} className={header.column.columnDef.meta?.className}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length ? (
+            table.getRowModel().rows.map(row => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && 'selected'}
+              >
+                {row.getVisibleCells().map(cell => (
+                  // DIUBAH: Menerapkan className dari metadata ke sel
+                  <TableCell key={cell.id} className={cell.column.columnDef.meta?.className}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
                 ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-      <DataTablePagination table={table} />
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                {isLoading ? 'Loading data...' : 'No results.'}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

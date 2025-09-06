@@ -1,5 +1,3 @@
-// Fixed Config Page with Better Error Handling
-// inventory-control/src/features/config/components/config-page.tsx
 'use client';
 
 import PageContainer from '@/components/layout/page-container';
@@ -9,15 +7,16 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
-import { useEffect, useState, useCallback } from 'react';
-import { toast } from 'sonner'; // Assuming you're using sonner for toast notifications
-import { ApiClient } from '../api';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { ConfigTable } from './config-table';
+import { configTypes } from '../config-types';
+import { ApiClient } from '../api/index';
 import { ConfigFormDialog } from './config-form-dialog';
+import { toast } from 'sonner';
 
-interface ConfigItem {
+export interface ConfigItem {
   id: number;
   code: string;
   name: string;
@@ -25,41 +24,32 @@ interface ConfigItem {
   [key: string]: any;
 }
 
-const types = [
-  { value: 'product_types', label: 'Product Type' },
-  { value: 'customer_types', label: 'Customer Type' },
-  { value: 'delivery_types', label: 'Delivery Type' },
-  { value: 'document_types', label: 'Document Type' },
-  { value: 'location_types', label: 'Location Type' },
-  { value: 'movement_types', label: 'Movement Type' },
-  { value: 'notification_types', label: 'Notification Type' },
-  { value: 'package_types', label: 'Package Type' },
-  { value: 'packaging_box_types', label: 'Packaging Box Type' },
-  { value: 'packaging_materials', label: 'Packaging Material' },
-  { value: 'priority_levels', label: 'Priority Level' },
-  { value: 'product_prices', label: 'Product Price' },
-  { value: 'sector_types', label: 'Sector Type' },
-  { value: 'status_types', label: 'Status Type' },
-  { value: 'temperature_types', label: 'Temperature Type' }
-];
-
 export default function ConfigPage() {
   const [selectedType, setSelectedType] = useState<string>('');
   const [data, setData] = useState<ConfigItem[]>([]);
-  const [apiClient, setApiClient] = useState<ApiClient | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const apiClient = useMemo(() => {
+    if (selectedType) {
+      return new ApiClient(selectedType);
+    }
+    return null;
+  }, [selectedType]);
 
   const fetchData = useCallback(async () => {
     if (!apiClient) return;
-    
+
+    setIsLoading(true);
+    setError(null);
     try {
-      setIsLoading(true);
       const result = await apiClient.getAll();
       setData(result);
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-      toast.error('Failed to load data');
-      setData([]);
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to fetch data';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -67,88 +57,82 @@ export default function ConfigPage() {
 
   useEffect(() => {
     if (selectedType) {
-      const client = new ApiClient(selectedType);
-      setApiClient(client);
+      fetchData();
     } else {
-      setApiClient(null);
       setData([]);
     }
-  }, [selectedType]);
+  }, [selectedType, fetchData]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleSave = async (item: any) => {
+  const handleSave = async (itemData: ConfigItem) => {
     if (!apiClient) return;
-
+    
     try {
-      if (item.id) {
-        await apiClient.update(item.id, item);
-        toast.success('Item updated successfully');
+      if (itemData.id) {
+        await apiClient.update(itemData.id, itemData);
       } else {
-        await apiClient.create(item);
-        toast.success('Item created successfully');
+        await apiClient.create(itemData);
       }
+      toast.success(`Item in ${selectedType} has been saved successfully!`);
       await fetchData();
-    } catch (error) {
-      console.error('Failed to save item:', error);
-      toast.error('Failed to save item');
-      throw error; // Re-throw to handle in the dialog
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to save item.';
+      toast.error(errorMessage);
+      console.error('Save error:', err);
+      throw err;
     }
   };
 
   const handleDelete = async (id: number) => {
     if (!apiClient) return;
-
-    if (!window.confirm('Are you sure you want to delete this item?')) {
-      return;
-    }
-
+    
     try {
       await apiClient.delete(id);
-      toast.success('Item deleted successfully');
+      toast.success(`Item has been deleted successfully!`);
       await fetchData();
-    } catch (error) {
-      console.error('Failed to delete item:', error);
-      toast.error('Failed to delete item');
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to delete item.';
+      toast.error(errorMessage);
+      console.error('Delete error:', err);
     }
   };
 
-  const selectedTypeLabel = types.find(type => type.value === selectedType)?.label;
-
   return (
     <PageContainer>
-      <div className='space-y-4'>
-        <div className='flex items-center justify-between'>
-          <Heading 
-            title={selectedTypeLabel ? `Configuration - ${selectedTypeLabel}` : 'Configuration'} 
-            description='Manage application types' 
-          />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Heading title="Configuration Management" description="Manage various types and settings for the application." />
           {selectedType && (
-            <ConfigFormDialog onSave={handleSave} isLoading={isLoading} />
+            <ConfigFormDialog 
+              onSave={handleSave} 
+              isLoading={isLoading} 
+              selectedType={selectedType}
+            />
           )}
         </div>
 
-        <div className='w-full max-w-xs'>
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger>
-              <SelectValue placeholder='Select a type' />
-            </SelectTrigger>
-            <SelectContent>
-              {types.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Select onValueChange={setSelectedType} value={selectedType}>
+          <SelectTrigger className="w-[280px]">
+            <SelectValue placeholder="Select a configuration type" />
+          </SelectTrigger>
+          <SelectContent>
+            {/* FIX: Menggunakan `type.value` untuk `key` dan `value` sesuai dengan 
+              struktur data di `config-types.ts`.
+            */}
+            {configTypes.map(type => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {error && !isLoading && <p className="text-red-500">Error: {error}</p>}
 
         {selectedType && (
-          <ConfigTable 
-            data={data} 
-            onSave={handleSave} 
+          <ConfigTable
+            data={data}
+            selectedType={selectedType}
+            onSave={handleSave}
             onDelete={handleDelete}
             isLoading={isLoading}
           />
