@@ -1,7 +1,6 @@
-# file: app/api/utils/crud_router_factory.py (SUDAH DIPERBAIKI)
+# file: app/api/utils/crud_router_factory.py (VERSI FINAL YANG BEKERJA)
 
 from typing import Type, List
-# ✅ LANGKAH 1: Impor 'Body' dari FastAPI
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
@@ -19,18 +18,24 @@ def create_crud_router(
 ) -> APIRouter:
     """
     Pabrik fungsional yang secara otomatis menghasilkan endpoint CRUD.
+    Versi ini secara eksplisit memberikan tipe skema ke FastAPI untuk memastikan fungsionalitas runtime.
     """
     router = APIRouter(prefix=prefix, tags=tags)
+
+    # Ekstrak tipe skema yang konkret dari service.
+    # Ini adalah langkah kunci untuk memberitahu FastAPI skema mana yang harus digunakan.
+    ConcreteCreateSchema = service.get_create_schema_type()
+    ConcreteUpdateSchema = service.get_update_schema_type()
 
     @router.post("/", response_model=response_schema, status_code=status.HTTP_201_CREATED)
     async def create(
         *,
         db: AsyncSession = Depends(deps.get_db_session),
-        # ✅ LANGKAH 2: Tambahkan '= Body(...)' untuk menandai ini sebagai Request Body yang wajib diisi.
-        obj_in: CreateSchemaType = Body(...),
+        # Gunakan tipe skema yang konkret ini. FastAPI akan tahu cara menanganinya.
+        obj_in: ConcreteCreateSchema = Body(...), #type:ignore
     ) -> ModelType:
         """
-        Create a new item.
+        Membuat item baru.
         """
         return await service.create(db=db, obj_in=obj_in)
 
@@ -42,14 +47,14 @@ def create_crud_router(
         limit: int = 100,
     ) -> List[ModelType]:
         """
-        Retrieve a list of items.
+        Mengambil daftar item.
         """
         return await service.get_multi(db=db, skip=skip, limit=limit)
 
     @router.get("/{id}", response_model=response_schema)
     async def get_by_id(*, db: AsyncSession = Depends(deps.get_db_session), id: int) -> ModelType:
         """
-        Retrieve a single item by ID.
+        Mengambil satu item berdasarkan ID.
         """
         obj = await service.get(db=db, id=id)
         if not obj:
@@ -61,11 +66,11 @@ def create_crud_router(
         *,
         db: AsyncSession = Depends(deps.get_db_session),
         id: int,
-        # ✅ LANGKAH 2 (Bonus): Terapkan perbaikan yang sama pada endpoint update untuk konsistensi.
-        obj_in: UpdateSchemaType = Body(...),
+        # Lakukan hal yang sama untuk endpoint update.
+        obj_in: ConcreteUpdateSchema = Body(...), #type:ignore
     ) -> ModelType:
         """
-        Update an existing item.
+        Memperbarui item yang sudah ada.
         """
         db_obj = await service.get(db=db, id=id)
         if not db_obj:
@@ -75,8 +80,9 @@ def create_crud_router(
     @router.delete("/{id}", response_model=response_schema)
     async def delete(*, db: AsyncSession = Depends(deps.get_db_session), id: int) -> ModelType:
         """
-        Delete an item.
+        Menghapus item.
         """
+        # Pastikan service Anda memiliki metode 'remove' atau 'delete'
         deleted_obj = await service.remove(db=db, id=id)
         if not deleted_obj:
             raise HTTPException(status_code=404, detail=f"{service.model.__name__} not found")

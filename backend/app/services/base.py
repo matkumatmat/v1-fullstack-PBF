@@ -24,6 +24,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def __init__(self, model: Type[ModelType]):
         self.model = model
+        
+    # ✅ PASTIKAN DUA METODE INI ADA
+    def get_create_schema_type(self) -> Type[CreateSchemaType]:
+        """Mengambil tipe skema Create yang konkret dari anotasi generik."""
+        return self.__orig_class__.__args__[1]
+
+    def get_update_schema_type(self) -> Type[UpdateSchemaType]:
+        """Mengambil tipe skema Update yang konkret dari anotasi generik."""
+        return self.__orig_class__.__args__[2]            
 
     async def get(self, db: AsyncSession, id: Any) -> Optional[ModelType]:
         """Mendapatkan satu objek berdasarkan ID."""
