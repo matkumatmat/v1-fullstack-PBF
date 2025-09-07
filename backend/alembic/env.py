@@ -1,9 +1,33 @@
+# file: alembic/env.py (REFAKTORED)
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
+
+# --- [BAGIAN 1: TAMBAHAN KRITIS] ---
+# Tujuan: Memungkinkan Alembic menemukan model-model Anda.
+import os
+import sys
+
+# 1. Tambahkan direktori root proyek Anda ke path Python.
+#    `os.path.dirname(__file__)` -> direktori 'alembic' saat ini.
+#    `'..'` -> naik satu level ke direktori root proyek.
+#    Ini memastikan `from app.models...` dapat ditemukan.
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
+
+# 2. Impor BaseModel Anda.
+#    Ini adalah objek pusat yang berisi `metadata` dari SEMUA model Anda.
+from app.models.base import BaseModel
+
+# 3. Impor semua modul model Anda.
+#    Ini penting agar SQLAlchemy "mendaftarkan" semua tabel Anda ke dalam
+#    metadata BaseModel sebelum Alembic membandingkannya.
+from app.models import *
+# --- [AKHIR BAGIAN 1] ---
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,7 +42,14 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+
+# --- [BAGIAN 2: PERUBAHAN KRITIS] ---
+# Tujuan: Memberitahu Alembic skema database seperti apa yang Anda inginkan.
+#         Alembic akan membandingkan `target_metadata` ini dengan skema
+#         database yang sebenarnya untuk mendeteksi perubahan.
+target_metadata = BaseModel.metadata
+# --- [AKHIR BAGIAN 2] ---
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
