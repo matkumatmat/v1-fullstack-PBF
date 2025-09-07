@@ -20,14 +20,17 @@ from app.core.exceptions import NotFoundException, BadRequestException
 
 async def get_warehouse_by_id(db: AsyncSession, warehouse_id: int) -> Optional[Warehouse]:
     """
-    Mengambil satu warehouse berdasarkan ID, dengan semua relasi yang dibutuhkan sudah di-load.
+    Mengambil satu warehouse berdasarkan ID, dengan semua relasi bertingkat sudah di-load.
     """
     query = (
         select(Warehouse)
         .where(Warehouse.id == warehouse_id)
-        # ✅ REFACTOR: Eager load SEMUA relasi yang ada di skema Pydantic Warehouse.
         .options(
-            selectinload(Warehouse.racks),
+            # ✅ PERBAIKAN: Gunakan selectinload bertingkat (chained)
+            selectinload(Warehouse.racks).options(
+                selectinload(Rack.placement),
+                selectinload(Rack.location_type)
+            ),
             selectinload(Warehouse.temperature_type)
         )
     )
@@ -36,16 +39,19 @@ async def get_warehouse_by_id(db: AsyncSession, warehouse_id: int) -> Optional[W
 
 async def get_all_warehouses(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Warehouse]:
     """
-    Mengambil daftar warehouse, dengan semua relasi yang dibutuhkan sudah di-load.
+    Mengambil daftar warehouse, dengan semua relasi bertingkat sudah di-load.
     """
     query = (
         select(Warehouse)
         .offset(skip)
         .limit(limit)
         .order_by(Warehouse.id)
-        # ✅ REFACTOR: Eager load relasi untuk setiap item dalam daftar.
         .options(
-            selectinload(Warehouse.racks),
+            # ✅ PERBAIKAN: Terapkan juga di sini
+            selectinload(Warehouse.racks).options(
+                selectinload(Rack.placement),
+                selectinload(Rack.location_type)
+            ),
             selectinload(Warehouse.temperature_type)
         )
     )
