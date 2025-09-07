@@ -1,12 +1,12 @@
-# file: app/api/utils/crud_router_factory.py (VERSI FINAL DAN BENAR)
+# file: app/api/utils/crud_router_factory.py (SUDAH DIPERBAIKI)
 
 from typing import Type, List
-from fastapi import APIRouter, Depends, HTTPException, status
+# ✅ LANGKAH 1: Impor 'Body' dari FastAPI
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
 # Impor dari proyek Anda
-# Kita sekarang mengimpor TypeVar secara langsung
 from app.services.base import CRUDBase, ModelType, CreateSchemaType, UpdateSchemaType
 from app.api import deps
 
@@ -19,7 +19,6 @@ def create_crud_router(
 ) -> APIRouter:
     """
     Pabrik fungsional yang secara otomatis menghasilkan endpoint CRUD.
-    Menggunakan TypeVar langsung dalam anotasi untuk kepatuhan Pylance.
     """
     router = APIRouter(prefix=prefix, tags=tags)
 
@@ -27,9 +26,8 @@ def create_crud_router(
     async def create(
         *,
         db: AsyncSession = Depends(deps.get_db_session),
-        # DEVIL'S ADVOCATE FIX: Gunakan TypeVar `CreateSchemaType` secara langsung.
-        # FastAPI cukup pintar untuk mengambil tipe yang benar dari `service`.
-        obj_in: CreateSchemaType,
+        # ✅ LANGKAH 2: Tambahkan '= Body(...)' untuk menandai ini sebagai Request Body yang wajib diisi.
+        obj_in: CreateSchemaType = Body(...),
     ) -> ModelType:
         """
         Create a new item.
@@ -63,8 +61,8 @@ def create_crud_router(
         *,
         db: AsyncSession = Depends(deps.get_db_session),
         id: int,
-        # DEVIL'S ADVOCATE FIX: Gunakan TypeVar `UpdateSchemaType` secara langsung.
-        obj_in: UpdateSchemaType,
+        # ✅ LANGKAH 2 (Bonus): Terapkan perbaikan yang sama pada endpoint update untuk konsistensi.
+        obj_in: UpdateSchemaType = Body(...),
     ) -> ModelType:
         """
         Update an existing item.

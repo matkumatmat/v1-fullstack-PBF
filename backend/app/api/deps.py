@@ -1,10 +1,10 @@
-# file: app/api/deps.py
+# file: app/api/deps.py (SUDAH DIPERBAIKI)
 
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Impor SessionLocal dari konfigurasi database Anda
-from app.database import SessionLocal
+# Impor nama yang benar (AsyncSessionLocal) dan beri alias sebagai SessionLocal
+from app.database import AsyncSessionLocal as SessionLocal
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
@@ -18,6 +18,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     Ini selaras dengan keputusan arsitektur kita untuk menggunakan `select`
     secara konsisten demi fleksibilitas dan kekuatan.
     """
+    # Sekarang SessionLocal merujuk ke AsyncSessionLocal yang benar
     async with SessionLocal() as session:
         try:
             yield session

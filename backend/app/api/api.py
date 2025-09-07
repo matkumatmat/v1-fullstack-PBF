@@ -6,7 +6,7 @@ from fastapi import APIRouter
 
 # 1. Impor modul router tipe dari direktori `type`
 #    Pastikan Anda memiliki `__init__.py` di `app/api/routers/` dan `app/api/routers/type/`
-from .routers.type import (
+from app.api.routers.type import (
     allocation_type,
     customer_type,
     delivery_type,
@@ -27,10 +27,10 @@ from .routers.type import (
 
 # 2. Impor modul router entitas utama
 from .routers import (
-    warehouse,
-    customer,
-    product,
-    order_process,
+    warehouse_routes,
+    #customer,
+    #product,
+    #order_process,
 )
 
 # --- Inisialisasi Router Utama ---
@@ -59,7 +59,7 @@ api_router.include_router(temperature_type.router)
 
 # --- Penyertaan Router Entitas/Proses ---
 # Router ini didefinisikan secara manual di file masing-masing.
-api_router.include_router(warehouse.router)
-api_router.include_router(customer.router)
-api_router.include_router(product.router)
-api_router.include_router(order_process.router)
+api_router.include_router(warehouse_routes.router)
+#api_router.include_router(customer.router)
+#api_router.include_router(product.router)
+#api_router.include_router(order_process.router)

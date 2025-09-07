@@ -77,57 +77,52 @@ def _populate_namespace():
 
 # Populate namespace
 _populate_namespace()
-
-# --- [BAGIAN 4: CENTRALIZED MODEL REBUILDING] ---
-# ✅ FIXED: Satu tempat untuk semua model_rebuild(), dengan urutan yang benar
-
 def _rebuild_all_models():
     """
-    Rebuild semua model dengan forward references dalam urutan dependency yang benar.
-    
-    URUTAN PENTING:
-    1. Base models dulu (tidak ada/sedikit dependencies)
-    2. Models dengan relationships sedang
-    3. Models dengan complex relationships terakhir
+    Rebuild semua model dengan secara eksplisit menyediakan namespace yang lengkap
+    ke setiap panggilan model_rebuild(), yang merupakan cara yang benar dan kuat.
     """
-    
-    print("🔄 Rebuilding Pydantic models...")
-    
+    print("🔄 Rebuilding Pydantic models with a shared namespace...")
+
+    # Step 1: Buat satu namespace kamus yang komprehensif.
+    # Ini berisi semua kelas skema yang mungkin digunakan sebagai forward references.
+    # Kita menggunakan globals() dari modul ini karena _populate_namespace sudah mengisinya.
+    types_namespace = {name: globals()[name] for name in __all__ if name in globals()}
+    print(f"  ├── Created namespace with {len(types_namespace)} types.")
+
+    # Step 2: Tentukan urutan model yang akan direbuild.
+    # Urutannya sekarang jauh lebih tidak kritis, tetapi urutan logis tetap baik.
+    all_models = [
+        # Core
+        product.Product, customer.Customer, warehouse.Warehouse,
+        # Details
+        product.Batch, customer.CustomerAddress, warehouse.Rack,
+        # Linking
+        product.Allocation, warehouse.StockPlacement,
+        # Order Process
+        order_process.SalesOrder, order_process.SalesOrderItem,
+        order_process.ShippingPlan, order_process.ShippingPlanItem,
+    ]
+
+    # Step 3: Rebuild setiap model, dengan memberikan namespace yang lengkap.
     try:
-        # Step 1: Base models dan Type models (tidak ada circular refs)
-        print("  ├── Rebuilding base and type models...")
-        # Type models sudah aman, tidak perlu rebuild khusus
-        
-        # Step 2: Core business models
-        print("  ├── Rebuilding core models...")
-        customer.Customer.model_rebuild()
-        product.Product.model_rebuild()
-        product.Batch.model_rebuild()
-        warehouse.Warehouse.model_rebuild()
-        warehouse.Rack.model_rebuild()
-        
-        # Step 3: Models dengan relationships ke core models
-        print("  ├── Rebuilding relationship models...")
-        customer.CustomerAddress.model_rebuild()
-        product.Allocation.model_rebuild()
-        warehouse.StockPlacement.model_rebuild()
-        
-        # Step 4: Order process models (paling kompleks)
-        print("  ├── Rebuilding order process models...")
-        order_process.SalesOrder.model_rebuild()
-        order_process.SalesOrderItem.model_rebuild()
-        order_process.ShippingPlan.model_rebuild()
-        order_process.ShippingPlanItem.model_rebuild()
-        
+        for model in all_models:
+            # Pastikan model ada sebelum mencoba merebuild
+            if model:
+                print(f"  ├── Rebuilding {model.__name__}...")
+                # ✅ INI ADALAH KUNCINYA: Berikan namespace secara langsung.
+                model.model_rebuild(_types_namespace=types_namespace)
+
         print("  └── ✅ All models rebuilt successfully!")
-        
+
     except Exception as e:
         print(f"  └── ❌ Error during model rebuild: {e}")
+        import traceback
+        traceback.print_exc()
         raise
 
-# ✅ CRITICAL: Jalankan rebuild setelah semua impor selesai
 _rebuild_all_models()
 
+
 # --- [BAGIAN 5: CLEANUP] ---
-# Hapus fungsi helper dari namespace publik
 del _populate_namespace, _rebuild_all_models
