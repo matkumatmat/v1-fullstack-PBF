@@ -1,18 +1,15 @@
-# file: app/api/routers/warehouse.py (FULL REFACTORED CODE)
+# file: app/api/routers/warehouse.py (FINAL REFACTORED CODE)
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-# --- Impor yang Benar dan Terpusat ---
-# Mengimpor dependensi, skema, dan service dengan cara yang konsisten.
+# --- Impor Dependensi, Skema, dan Service ---
 from app.api.deps import get_db_session
 from app import schemas
 from app.services import warehouse_service
 
 # --- Router Utama untuk Modul Warehouse ---
-# Kita hanya membuat SATU router dan menempelkan semua endpoint ke sini.
-# File api.py akan mengimpor objek 'router' ini.
 router = APIRouter()
 
 # ===================================================================
@@ -20,21 +17,22 @@ router = APIRouter()
 # ===================================================================
 
 @router.post("/warehouses", response_model=schemas.Warehouse, status_code=status.HTTP_201_CREATED, tags=["Warehouses"])
-async def create_warehouse(warehouse_in: schemas.WarehouseCreate, db: AsyncSession = Depends(get_db_session)):
+async def create_warehouse_endpoint(warehouse_data: schemas.WarehouseCreate, db: AsyncSession = Depends(get_db_session)):
     """
     Membuat warehouse baru.
     """
-    return await warehouse_service.create_warehouse(db=db, warehouse_in=warehouse_in)
+    # Memastikan keyword argument 'warehouse_in' cocok dengan definisi di service.
+    return await warehouse_service.create_warehouse(db=db, warehouse_in=warehouse_data)
 
 @router.get("/warehouses", response_model=List[schemas.Warehouse], tags=["Warehouses"])
-async def read_warehouses(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db_session)):
+async def read_warehouses_endpoint(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db_session)):
     """
     Mengambil daftar semua warehouse.
     """
     return await warehouse_service.get_all_warehouses(db, skip=skip, limit=limit)
 
 @router.get("/warehouses/{warehouse_id}", response_model=schemas.Warehouse, tags=["Warehouses"])
-async def read_warehouse(warehouse_id: int, db: AsyncSession = Depends(get_db_session)):
+async def read_warehouse_endpoint(warehouse_id: int, db: AsyncSession = Depends(get_db_session)):
     """
     Mengambil satu warehouse berdasarkan ID.
     """
@@ -44,14 +42,15 @@ async def read_warehouse(warehouse_id: int, db: AsyncSession = Depends(get_db_se
     return db_warehouse
 
 @router.put("/warehouses/{warehouse_id}", response_model=schemas.Warehouse, tags=["Warehouses"])
-async def update_warehouse(warehouse_id: int, warehouse_in: schemas.WarehouseUpdate, db: AsyncSession = Depends(get_db_session)):
+async def update_warehouse_endpoint(warehouse_id: int, warehouse_data: schemas.WarehouseUpdate, db: AsyncSession = Depends(get_db_session)):
     """
     Memperbarui data warehouse.
     """
-    return await warehouse_service.update_warehouse(db, warehouse_id=warehouse_id, warehouse_in=warehouse_in)
+    # Memastikan keyword argument 'warehouse_in' cocok dengan definisi di service.
+    return await warehouse_service.update_warehouse(db=db, warehouse_id=warehouse_id, warehouse_in=warehouse_data)
 
 @router.delete("/warehouses/{warehouse_id}", response_model=schemas.Warehouse, tags=["Warehouses"])
-async def delete_warehouse(warehouse_id: int, db: AsyncSession = Depends(get_db_session)):
+async def delete_warehouse_endpoint(warehouse_id: int, db: AsyncSession = Depends(get_db_session)):
     """
     Menghapus warehouse.
     """
@@ -63,21 +62,22 @@ async def delete_warehouse(warehouse_id: int, db: AsyncSession = Depends(get_db_
 # ===================================================================
 
 @router.post("/racks", response_model=schemas.Rack, status_code=status.HTTP_201_CREATED, tags=["Racks"])
-async def create_rack(rack_in: schemas.RackCreate, db: AsyncSession = Depends(get_db_session)):
+async def create_rack_endpoint(rack_data: schemas.RackCreate, db: AsyncSession = Depends(get_db_session)):
     """
     Membuat rack baru di dalam sebuah warehouse.
     """
-    return await warehouse_service.create_rack(db=db, rack_in=rack_in)
+    # Memastikan keyword argument 'rack_in' cocok dengan definisi di service.
+    return await warehouse_service.create_rack(db=db, rack_in=rack_data)
 
 @router.get("/racks", response_model=List[schemas.Rack], tags=["Racks"])
-async def read_racks(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db_session)):
+async def read_racks_endpoint(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db_session)):
     """
     Mengambil daftar semua rack.
     """
     return await warehouse_service.get_all_racks(db, skip=skip, limit=limit)
 
 @router.get("/racks/{rack_id}", response_model=schemas.Rack, tags=["Racks"])
-async def read_rack(rack_id: int, db: AsyncSession = Depends(get_db_session)):
+async def read_rack_endpoint(rack_id: int, db: AsyncSession = Depends(get_db_session)):
     """
     Mengambil satu rack berdasarkan ID.
     """
@@ -87,14 +87,15 @@ async def read_rack(rack_id: int, db: AsyncSession = Depends(get_db_session)):
     return db_rack
 
 @router.put("/racks/{rack_id}", response_model=schemas.Rack, tags=["Racks"])
-async def update_rack(rack_id: int, rack_in: schemas.RackUpdate, db: AsyncSession = Depends(get_db_session)):
+async def update_rack_endpoint(rack_id: int, rack_data: schemas.RackUpdate, db: AsyncSession = Depends(get_db_session)):
     """
     Memperbarui data rack.
     """
-    return await warehouse_service.update_rack(db, rack_id=rack_id, rack_in=rack_in)
+    # Memastikan keyword argument 'rack_in' cocok dengan definisi di service.
+    return await warehouse_service.update_rack(db=db, rack_id=rack_id, rack_in=rack_data)
 
 @router.delete("/racks/{rack_id}", response_model=schemas.Rack, tags=["Racks"])
-async def delete_rack(rack_id: int, db: AsyncSession = Depends(get_db_session)):
+async def delete_rack_endpoint(rack_id: int, db: AsyncSession = Depends(get_db_session)):
     """
     Menghapus rack.
     """
@@ -106,14 +107,15 @@ async def delete_rack(rack_id: int, db: AsyncSession = Depends(get_db_session)):
 # ===================================================================
 
 @router.post("/stock-placements", response_model=schemas.StockPlacement, status_code=status.HTTP_201_CREATED, tags=["Stock Placements"])
-async def place_stock(placement_in: schemas.StockPlacementCreate, db: AsyncSession = Depends(get_db_session)):
+async def place_stock_endpoint(placement_data: schemas.StockPlacementCreate, db: AsyncSession = Depends(get_db_session)):
     """
     Menempatkan stok (dari alokasi) ke dalam sebuah rack.
     """
-    return await warehouse_service.place_stock_in_rack(db=db, placement_in=placement_in)
+    # Memastikan keyword argument 'placement_in' cocok dengan definisi di service.
+    return await warehouse_service.place_stock_in_rack(db=db, placement_in=placement_data)
 
 @router.delete("/racks/{rack_id}/stock-placement", response_model=schemas.Rack, tags=["Stock Placements"])
-async def remove_stock(rack_id: int, db: AsyncSession = Depends(get_db_session)):
+async def remove_stock_endpoint(rack_id: int, db: AsyncSession = Depends(get_db_session)):
     """
     Mengosongkan sebuah rack dengan menghapus penempatan stoknya.
     """

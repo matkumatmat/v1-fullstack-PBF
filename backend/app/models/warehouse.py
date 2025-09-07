@@ -20,7 +20,7 @@ class Warehouse(BaseModel):
     # ... (Tidak ada perubahan di sini, model Warehouse sudah benar) ...
     __tablename__ = 'warehouses'
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    code: Mapped[str] = mapped_column(String(10), unique=True, nullable=False)
+    code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
     address: Mapped[Optional[str]] = mapped_column(Text)
     status: Mapped[WarehouseStatusEnum] = mapped_column(SQLAlchemyEnum(WarehouseStatusEnum, name="warehouse_status_enum", create_type=False), default=WarehouseStatusEnum.ACTIVE)
     temperature_type_id: Mapped[Optional[int]] = mapped_column(ForeignKey('temperature_types.id'))

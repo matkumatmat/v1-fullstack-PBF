@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 class WarehouseBase(BaseModel):
     """Skema dasar dengan field yang dapat diinput oleh pengguna untuk Warehouse."""
     name: Annotated[str, Field(..., max_length=100)]
-    code: Annotated[str, Field(..., max_length=10)]
+    code: Annotated[str, Field(..., max_length=20)]
     address: Optional[str] = None
     temperature_type_id: Optional[int] = None
 
@@ -28,7 +28,7 @@ class WarehouseCreate(WarehouseBase):
 class WarehouseUpdate(BaseModel):
     """Skema untuk memperbarui Warehouse. Semua field opsional."""
     name: Optional[Annotated[str, Field(max_length=100)]] = None
-    code: Optional[Annotated[str, Field(max_length=10)]] = None
+    code: Optional[Annotated[str, Field(max_length=20)]] = None
     address: Optional[str] = None
     temperature_type_id: Optional[int] = None
     status: Optional[WarehouseStatusEnum] = None
