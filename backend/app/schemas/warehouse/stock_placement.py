@@ -2,18 +2,19 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-# from ..product.allocation import Allocation # Dihindari untuk circular import
-#from .rack import Rack
-from typing import TYPE_CHECKING
-# --- Forward Reference Rebuilding ---
-from ..product.allocation import Allocation
+# DEVIL'S ADVOCATE NOTE:
+# Impor tipe untuk type hinting (seperti Allocation, Rack, Warehouse)
+# harus ditempatkan di dalam blok `if TYPE_CHECKING:`.
+# Ini membuat tipe tersedia untuk alat analisis statis (seperti mypy)
+# tetapi tidak dijalankan saat runtime, sehingga menghindari circular imports.
+# Resolusi forward reference ('Allocation') akan ditangani oleh __init__.py.
 if TYPE_CHECKING:
-    from .warehouse import Warehouse
     from .rack import Rack
+    from ..product.allocation import Allocation
 
 # --- StockPlacement Schemas ---
 

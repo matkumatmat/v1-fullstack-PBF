@@ -5,7 +5,7 @@ from decimal import Decimal
 from datetime import date
 from pydantic import Field, BaseModel, ConfigDict
 import uuid
-import datetime
+from datetime import date, datetime  # ✅ FIXED: Import specific classes, not module
 
 # DEVIL'S ADVOCATE NOTE: Model ini tidak punya `code` dan `name` yang konsisten, jadi tidak bisa mewarisi TypeBase.
 # Kita buat skema kustom untuknya.

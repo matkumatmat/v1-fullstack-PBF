@@ -2,15 +2,17 @@
 
 import uuid
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
 from app.models.enums import AllocationStatusEnum
 from ..type.allocation_type import AllocationType
-# from ..customer.customer import Customer # Hindari circular import
-# from ..warehouse.stock_placement import StockPlacement # Hindari circular import
+if TYPE_CHECKING:
+    from ..customer.customer import Customer
+    from ..warehouse.stock_placement import StockPlacement
+    from .batch import Batch
 
 # --- Allocation Schemas ---
 
@@ -71,14 +73,12 @@ class Allocation(AllocationBase):
 
     # Relasi yang di-load
     allocation_type: Optional[AllocationType] = None
-    # customer: Optional[Customer] = None
-    # batch: Optional['Batch'] = None # Hindari relasi kembali ke parent jika tidak perlu
+    customer: Optional['Customer'] = None
+    batch: Optional['Batch'] = None # Hindari relasi kembali ke parent jika tidak perlu
     placements: List['StockPlacement'] = []
 
     model_config = ConfigDict(from_attributes=True)
 
 # --- Forward Reference Rebuilding ---
-# Diperlukan jika skema saling mereferensikan, seperti Allocation -> StockPlacement
-# dan StockPlacement -> Allocation.
-from ..warehouse.stock_placement import StockPlacement
-Allocation.model_rebuild()
+# Pemanggilan model_rebuild() sekarang dipusatkan di app/schemas/__init__.py
+# untuk menghindari circular imports.

@@ -4,6 +4,7 @@ from typing import Optional
 from decimal import Decimal
 from pydantic import Field
 from .base import TypeBase, TypeCreate, TypeUpdate, TypeInDBBase
+from datetime import date, datetime  # ✅ FIXED: Import specific classes, not module
 
 class TemperatureTypeBase(TypeBase):
     min_celsius: Optional[Decimal] = Field(default=None, max_digits=5, decimal_places=2)

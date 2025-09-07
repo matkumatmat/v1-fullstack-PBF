@@ -1,38 +1,16 @@
-# file: app/schemas/__init__.py (REFAKTORED)
+# file: app/schemas/__init__.py (COMPLETELY FIXED)
 
 # --- [BAGIAN 1: IMPOR MODUL] ---
-# DEVIL'S ADVOCATE NOTE:
-# Alih-alih mengimpor setiap kelas satu per satu, kita impor modulnya.
-# Ini lebih bersih dan lebih mudah dikelola. Kita akan menggunakan `__all__`
-# di bawah untuk mengontrol apa yang diekspos secara publik.
-# Pastikan setiap sub-direktori (customer, product, dll.) memiliki `__init__.py`-nya sendiri.
+# Impor semua sub-modul dalam urutan dependency yang benar
+# Tidak ada circular dependency karena semua sudah menggunakan TYPE_CHECKING
+
 from . import customer
 from . import product
 from . import warehouse
 from . import order_process
 from . import type as type_schemas
 
-# --- [BAGIAN 2: REBUILDING FORWARD REFERENCES] ---
-# DEVIL'S ADVOCATE NOTE:
-# Ini adalah bagian paling KRITIS yang akan menyelesaikan error `PydanticUndefinedAnnotation`.
-# Setelah semua modul di atas diimpor, semua kelas skema (Customer, Rack, Allocation, dll.)
-# sudah ada di dalam memori. Sekarang adalah waktu yang aman untuk memberitahu Pydantic
-# untuk menyelesaikan semua referensi string (misalnya, 'Allocation', 'Rack').
-
-warehouse.Warehouse.model_rebuild()
-warehouse.Rack.model_rebuild()
-warehouse.StockPlacement.model_rebuild()
-customer.Customer.model_rebuild()
-product.Allocation.model_rebuild()
-order_process.SalesOrder.model_rebuild()
-order_process.SalesOrderItem.model_rebuild()
-order_process.ShippingPlan.model_rebuild()
-order_process.ShippingPlanItem.model_rebuild()
-
-
-# --- [BAGIAN 3: DEFINISI API PUBLIK (`__all__`)] ---
-# `__all__` mendefinisikan apa yang akan diimpor saat seseorang melakukan `from app.schemas import *`.
-# Ini adalah cara yang baik untuk menjaga namespace tetap bersih.
+# --- [BAGIAN 2: DEFINISI API PUBLIK (`__all__`)] ---
 __all__ = [
     # Customer
     "Customer", "CustomerCreate", "CustomerUpdate",
@@ -69,15 +47,87 @@ __all__ = [
     "MovementType", "MovementTypeCreate", "MovementTypeUpdate",
 ]
 
-# --- [BAGIAN 4: MEMBUAT `__all__` BEKERJA] ---
-# DEVIL'S ADVOCATE NOTE:
-# Agar `__all__` berfungsi dengan impor modular kita, kita perlu secara dinamis
-# mengisi namespace `__init__.py` ini. Loop ini akan mengambil setiap kelas
-# dari modul yang diimpor dan membuatnya tersedia secara langsung.
-_module_names = ["customer", "product", "warehouse", "order_process", "type_schemas"]
-for _name in __all__:
-    for _mod_name in _module_names:
-        _mod = locals()[_mod_name]
-        if hasattr(_mod, _name):
-            globals()[_name] = getattr(_mod, _name)
-            break
+# --- [BAGIAN 3: POPULATE NAMESPACE] ---
+# ✅ FIXED: Lebih robust dan aman
+def _populate_namespace():
+    """
+    Populate namespace dengan semua kelas dari modul-modul yang diimpor.
+    Menggunakan pendekatan yang lebih robust daripada versi sebelumnya.
+    """
+    modules = {
+        'customer': customer,
+        'product': product, 
+        'warehouse': warehouse,
+        'order_process': order_process,
+        'type_schemas': type_schemas
+    }
+    
+    current_globals = globals()
+    
+    for name in __all__:
+        found = False
+        for module_name, module in modules.items():
+            if hasattr(module, name):
+                current_globals[name] = getattr(module, name)
+                found = True
+                break
+        
+        if not found:
+            print(f"Warning: {name} not found in any module")
+
+# Populate namespace
+_populate_namespace()
+
+# --- [BAGIAN 4: CENTRALIZED MODEL REBUILDING] ---
+# ✅ FIXED: Satu tempat untuk semua model_rebuild(), dengan urutan yang benar
+
+def _rebuild_all_models():
+    """
+    Rebuild semua model dengan forward references dalam urutan dependency yang benar.
+    
+    URUTAN PENTING:
+    1. Base models dulu (tidak ada/sedikit dependencies)
+    2. Models dengan relationships sedang
+    3. Models dengan complex relationships terakhir
+    """
+    
+    print("🔄 Rebuilding Pydantic models...")
+    
+    try:
+        # Step 1: Base models dan Type models (tidak ada circular refs)
+        print("  ├── Rebuilding base and type models...")
+        # Type models sudah aman, tidak perlu rebuild khusus
+        
+        # Step 2: Core business models
+        print("  ├── Rebuilding core models...")
+        customer.Customer.model_rebuild()
+        product.Product.model_rebuild()
+        product.Batch.model_rebuild()
+        warehouse.Warehouse.model_rebuild()
+        warehouse.Rack.model_rebuild()
+        
+        # Step 3: Models dengan relationships ke core models
+        print("  ├── Rebuilding relationship models...")
+        customer.CustomerAddress.model_rebuild()
+        product.Allocation.model_rebuild()
+        warehouse.StockPlacement.model_rebuild()
+        
+        # Step 4: Order process models (paling kompleks)
+        print("  ├── Rebuilding order process models...")
+        order_process.SalesOrder.model_rebuild()
+        order_process.SalesOrderItem.model_rebuild()
+        order_process.ShippingPlan.model_rebuild()
+        order_process.ShippingPlanItem.model_rebuild()
+        
+        print("  └── ✅ All models rebuilt successfully!")
+        
+    except Exception as e:
+        print(f"  └── ❌ Error during model rebuild: {e}")
+        raise
+
+# ✅ CRITICAL: Jalankan rebuild setelah semua impor selesai
+_rebuild_all_models()
+
+# --- [BAGIAN 5: CLEANUP] ---
+# Hapus fungsi helper dari namespace publik
+del _populate_namespace, _rebuild_all_models

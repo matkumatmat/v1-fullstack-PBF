@@ -4,6 +4,8 @@ from typing import Optional
 from decimal import Decimal
 from pydantic import Field
 from .base import TypeBase, TypeCreate, TypeUpdate, TypeInDBBase
+from datetime import date, datetime  # ✅ FIXED: Import specific classes, not module
+
 
 class CustomerTypeBase(TypeBase):
     is_active: bool = Field(default=True)

@@ -2,14 +2,15 @@
 
 import uuid
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict, conint
-from typing_extensions import Annotated
+from typing import Annotated
 
-# Impor skema relasi
-from .product import Product
-from .allocation import Allocation
+# ✅ FIXED: Use TYPE_CHECKING for circular references
+if TYPE_CHECKING:
+    from .product import Product
+    from .allocation import Allocation
 
 # --- Batch Schemas ---
 
@@ -17,9 +18,9 @@ class BatchBase(BaseModel):
     """Skema dasar dengan field yang dapat diinput oleh pengguna untuk Batch."""
     lot_number: Annotated[str, Field(..., max_length=50)]
     expiry_date: date
-    NIE: Annotated[str, Field(..., max_length=50)]
+    NIE: Annotated[str, Field(str, max_length=50)]
     received_quantity: Annotated[int, Field(gt=0, description="Quantity received must be positive.")]
-    receipt_document: Annotated[str, Field(..., max_length=25)]
+    receipt_document: Annotated[str, Field(str, max_length=25)]
     receipt_date: date
     receipt_pic: Optional[Annotated[str, Field(max_length=25)]] = None
     receipt_doc_url: Optional[Annotated[str, Field(max_length=255)]] = None
@@ -48,7 +49,7 @@ class BatchUpdate(BaseModel):
     height: Optional[Decimal] = None
     weight: Optional[Decimal] = None
     # product_id biasanya tidak diubah, tapi bisa diaktifkan jika perlu
-    # product_id: Optional[int] = None
+    product_id: Optional[int] = None
 
 class Batch(BatchBase):
     """Skema read untuk Batch, termasuk field dari server dan relasi."""
@@ -58,7 +59,7 @@ class Batch(BatchBase):
     updated_at: datetime
 
     # Relasi yang di-load
-    product: Optional[Product] = None
-    allocations: List[Allocation] = []
+    product: Optional['Product'] = None
+    allocations: List['Allocation'] = []
 
     model_config = ConfigDict(from_attributes=True)

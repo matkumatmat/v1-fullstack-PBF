@@ -2,13 +2,15 @@
 
 import uuid
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
 from app.models.enums import ShippingPlanStatusEnum
 from .shipping_plan_item import ShippingPlanItem, ShippingPlanItemCreate # <-- Impor skema Create
 
+if TYPE_CHECKING:
+    from .sales_order import SalesOrder
 # --- ShippingPlan Schemas ---
 
 class ShippingPlanBase(BaseModel):
@@ -58,12 +60,3 @@ class ShippingPlan(ShippingPlanBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-# --- Forward Reference Rebuilding ---
-# Ini adalah bagian paling penting untuk menyelesaikan dependensi sirkular
-from .sales_order import SalesOrder
-from .sales_order_item import SalesOrderItem
-
-SalesOrder.model_rebuild()
-SalesOrderItem.model_rebuild()
-ShippingPlan.model_rebuild()
-ShippingPlanItem.model_rebuild()

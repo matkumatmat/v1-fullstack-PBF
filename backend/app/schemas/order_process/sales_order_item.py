@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
@@ -11,8 +11,11 @@ from app.models.enums import SalesOrderStatusEnum
 from ..type.sector_type import SectorType
 from ..type.allocation_type import AllocationType
 from ..type.product_price import ProductPrice
-from ..product.product import Product
-from .shipping_plan_item import ShippingPlanItem
+
+# ✅ FIXED: Use TYPE_CHECKING for circular references
+if TYPE_CHECKING:
+    from ..product.product import Product
+    from .shipping_plan_item import ShippingPlanItem
 
 # --- SalesOrderItem Schemas ---
 
@@ -52,7 +55,7 @@ class SalesOrderItem(SalesOrderItemBase):
     sales_order_id: int
 
     # Relasi yang di-load
-    product: Optional[Product] = None
+    product: Optional['Product'] = None
     product_price_entry: Optional[ProductPrice] = None
     shipping_plan_items: List['ShippingPlanItem'] = []
     sectors: List[SectorType] = []

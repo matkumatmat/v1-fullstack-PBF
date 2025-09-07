@@ -2,6 +2,7 @@
 
 from typing import Optional
 from .base import TypeBase, TypeCreate, TypeUpdate, TypeInDBBase
+from datetime import date, datetime  # ✅ FIXED: Import specific classes, not module
 
 class AllocationTypeBase(TypeBase):
     color_code: Optional[str] = None

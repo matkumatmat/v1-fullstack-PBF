@@ -3,6 +3,7 @@
 from typing import Optional
 from pydantic import Field
 from .base import TypeBase, TypeCreate, TypeUpdate, TypeInDBBase
+from datetime import date, datetime  # ✅ FIXED: Import specific classes, not module
 
 class PackageTypeBase(TypeBase):
     is_fragile: bool = Field(default=False)

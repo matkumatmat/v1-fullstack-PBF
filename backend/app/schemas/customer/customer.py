@@ -2,16 +2,16 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-# Impor skema lain yang dibutuhkan
+# Impor skema lain yang dibutuhkan (non-circular)
 from .customer_address import CustomerAddress, CustomerAddressCreate
 from ..type.customer_type import CustomerType
 from ..type.sector_type import SectorType
 
-from typing import TYPE_CHECKING
+# ✅ FIXED: Gunakan TYPE_CHECKING untuk semua forward references
 if TYPE_CHECKING:
     from ..product.allocation import Allocation
     from ..order_process.sales_order import SalesOrder
@@ -54,7 +54,3 @@ class Customer(CustomerBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-# --- Forward Reference Rebuilding ---
-from ..product.allocation import Allocation
-from ..order_process.sales_order import SalesOrder
-Customer.model_rebuild()

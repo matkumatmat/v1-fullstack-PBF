@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
@@ -11,7 +11,11 @@ from ..type.product_type import ProductType
 from ..type.package_type import PackageType
 from ..type.temperature_type import TemperatureType
 from ..type.product_price import ProductPrice
-# from ..order_process.sales_order import SalesOrderItem # Hindari circular import jika memungkinkan
+
+# ✅ FIXED: Use TYPE_CHECKING for potential circular references
+if TYPE_CHECKING:
+    from .batch import Batch
+    from ..order_process.sales_order_item import SalesOrderItem
 
 # --- Product Schemas ---
 
@@ -49,7 +53,7 @@ class Product(ProductBase):
     package_type: Optional[PackageType] = None
     temperature_type: Optional[TemperatureType] = None
     prices: List[ProductPrice] = []
-    # batches: List['Batch'] = [] # Hindari relasi dua arah yang dalam jika tidak perlu
-    # sales_order_items: List[SalesOrderItem] = []
+    batches: List['Batch'] = [] # Hindari relasi dua arah yang dalam jika tidak perlu
+    sales_order_items: List['SalesOrderItem'] = []
 
     model_config = ConfigDict(from_attributes=True)

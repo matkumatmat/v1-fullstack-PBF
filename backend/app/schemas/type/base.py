@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
+from datetime import date, datetime  # ✅ FIXED: Import specific classes, not module
+
 
 ### DEVIL'S ADVOCATE NOTE ###
 # Ini adalah fondasi modern kita. Satu set skema generik untuk semua

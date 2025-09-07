@@ -1,19 +1,19 @@
-# file: app/schemas/warehouse/rack.py
+# file: app/schemas/warehouse/rack.py (FIXED)
 
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
 from app.models.enums import RackStatusEnum
 from ..type.location_type import LocationType
-#from .stock_placement import StockPlacement # Dihindari untuk circular import
 
-from .stock_placement import StockPlacement
-from typing import TYPE_CHECKING
+# ✅ FIXED: Use TYPE_CHECKING for circular references
 if TYPE_CHECKING:
     from .warehouse import Warehouse
+    from .stock_placement import StockPlacement
+
 # --- Rack Schemas ---
 
 class RackBase(BaseModel):
@@ -53,6 +53,8 @@ class Rack(RackBase):
 
     # Relasi yang di-load
     location_type: Optional[LocationType] = None
+    
+    # ✅ FIXED: Use string annotations for forward references
     placement: Optional['StockPlacement'] = None
 
     model_config = ConfigDict(from_attributes=True)

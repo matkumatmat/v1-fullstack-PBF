@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import Field
 from .base import TypeBase, TypeCreate, TypeUpdate, TypeInDBBase
 from app.models.enums import MovementDirectionEnum
+from datetime import date, datetime  # ✅ FIXED: Import specific classes, not module
 
 class MovementTypeBase(TypeBase):
     direction: MovementDirectionEnum

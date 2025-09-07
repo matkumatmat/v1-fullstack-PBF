@@ -3,6 +3,7 @@
 from typing import Optional
 from pydantic import Field
 from .base import TypeBase, TypeCreate, TypeUpdate, TypeInDBBase
+from datetime import date, datetime  # ✅ FIXED: Import specific classes, not module
 
 class StatusTypeBase(TypeBase):
     entity_type: str = Field(..., max_length=50, description="e.g., 'SALES_ORDER', 'SHIPMENT'")

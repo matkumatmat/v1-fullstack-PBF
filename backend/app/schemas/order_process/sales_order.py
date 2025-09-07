@@ -2,16 +2,16 @@
 
 import uuid
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
 from app.models.enums import SalesOrderStatusEnum
-from ..customer.customer import Customer
 from .sales_order_item import SalesOrderItem, SalesOrderItemCreate # <-- Impor skema Create
-from .shipping_plan import ShippingPlan
-
+if TYPE_CHECKING:
+    from ..customer.customer import Customer
+    from .shipping_plan import ShippingPlan
 # --- SalesOrder Schemas ---
 
 class SalesOrderBase(BaseModel):
@@ -51,7 +51,7 @@ class SalesOrder(SalesOrderBase):
     total_amount: Optional[Decimal]
 
     # Relasi yang di-load
-    customer: Optional[Customer] = None
+    customer: Optional['Customer'] = None
     items: List[SalesOrderItem] = []
     shipping_plans: List['ShippingPlan'] = []
 

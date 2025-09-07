@@ -2,12 +2,13 @@
 
 import uuid
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
 from app.models.enums import ShippingPlanStatusEnum
-from .sales_order import SalesOrderItem
+if TYPE_CHECKING:
+    from .sales_order_item import SalesOrderItem
 
 # --- ShippingPlanItem Schemas ---
 
