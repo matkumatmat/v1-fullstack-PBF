@@ -16,7 +16,7 @@ __all__ = [
     "Customer", "CustomerCreate", "CustomerUpdate",
     "CustomerAddress", "CustomerAddressCreate", "CustomerAddressUpdate",
     # Product
-    "Product", "ProductCreate", "ProductUpdate",
+    "Product", "ProductCreate", "ProductUpdate","ProductInBatch"
     "Batch", "BatchCreate", "BatchUpdate",
     "Allocation", "AllocationCreate", "AllocationUpdate",
     # Warehouse
@@ -94,7 +94,7 @@ def _rebuild_all_models():
     # Urutannya sekarang jauh lebih tidak kritis, tetapi urutan logis tetap baik.
     all_models = [
         # Core
-        product.Product, customer.Customer, warehouse.Warehouse,
+        product.Product, product.product.ProductInBatch, customer.Customer, warehouse.Warehouse,
         # Details
         product.Batch, customer.CustomerAddress, warehouse.Rack,
         # Linking

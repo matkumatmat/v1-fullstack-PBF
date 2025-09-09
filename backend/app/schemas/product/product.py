@@ -57,3 +57,18 @@ class Product(ProductBase):
     sales_order_items: List['SalesOrderItem'] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+class ProductInBatch(ProductBase):
+    """
+    Skema read sederhana untuk Product saat ditampilkan SEBAGAI BAGIAN DARI Batch.
+    Skema ini TIDAK menyertakan relasi `batches` untuk memutus lingkaran.
+    """
+    id: int
+    public_id: uuid.UUID
+    
+    # Anda bisa menyertakan relasi tipe jika perlu
+    product_type: Optional[ProductType] = None
+    package_type: Optional[PackageType] = None
+    temperature_type: Optional[TemperatureType] = None
+
+    model_config = ConfigDict(from_attributes=True)    
