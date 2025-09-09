@@ -73,7 +73,6 @@ def init():
 
     asyncio.run(create_tables())
 
-
 @db_cli.command()
 def upgrade(revision: str = typer.Argument("head", help="The revision to upgrade to.")):
     """

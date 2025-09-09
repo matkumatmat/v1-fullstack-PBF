@@ -20,7 +20,7 @@ class TypeBase(BaseModel):
     # `code` harus berupa string uppercase, underscore, atau angka. Mencegah spasi atau karakter aneh.
     code: Annotated[str, Field(
         ..., # ... berarti field ini wajib diisi
-        max_length=20, 
+        max_length=50, 
         pattern=r'^[A-Z0-9_]+$',
         description="Unique, uppercase code for the type (e.g., 'HOSPITAL', 'REGULAR')."
     )]
@@ -46,7 +46,7 @@ class TypeUpdate(BaseModel):
     Tidak mewarisi dari TypeBase agar `code` yang unik bisa di-handle secara berbeda jika perlu.
     """
     code: Optional[Annotated[str, Field(
-        max_length=20, 
+        max_length=50, 
         pattern=r'^[A-Z0-9_]+$'
     )]] = None
     

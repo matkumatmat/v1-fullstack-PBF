@@ -97,7 +97,7 @@ class TemperatureType(BaseModel):
 
 class AllocationType(BaseModel):
     __tablename__ = 'allocation_types'
-    code: Mapped[str] = mapped_column(String(10), unique=True, nullable=False, index=True)
+    code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
     color_code: Mapped[Optional[str]] = mapped_column(String(7))
