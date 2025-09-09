@@ -18,7 +18,7 @@ class BatchBase(BaseModel):
     """Skema dasar dengan field yang dapat diinput oleh pengguna untuk Batch."""
     lot_number: Annotated[str, Field(..., max_length=50)]
     expiry_date: date
-    NIE: Annotated[str, Field(str, max_length=50)]
+    NIE: Annotated[str, Field(..., max_length=50)]
     received_quantity: Annotated[int, Field(gt=0, description="Quantity received must be positive.")]
     receipt_document: Annotated[str, Field(str, max_length=25)]
     receipt_date: date

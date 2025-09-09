@@ -29,7 +29,7 @@ from app.api.routers.type import (
 from .routers import (
     warehouse_routes,
     #customer,
-    #product,
+    product_routes,
     #order_process,
 )
 
@@ -61,5 +61,5 @@ api_router.include_router(temperature_type.router)
 # Router ini didefinisikan secara manual di file masing-masing.
 api_router.include_router(warehouse_routes.router)
 #api_router.include_router(customer.router)
-#api_router.include_router(product.router)
+api_router.include_router(product_routes.router)
 #api_router.include_router(order_process.router)

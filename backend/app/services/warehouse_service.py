@@ -1,4 +1,4 @@
-# file: app/services/warehouse_service.py (FULL REFACTORED CODE)
+# file: app/services/product_service.py (TRANSACTIONALLY SAFE - FULL VERSION)
 
 from typing import List, Optional
 from sqlalchemy import exc
@@ -6,252 +6,301 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-# Impor model yang sudah final
-from app.models.warehouse import Warehouse, Rack, StockPlacement
-from app.models.product import Allocation
+# Impor model yang relevan untuk service ini
+from app.models.product import Product, Batch, Allocation
 
-# Impor skema yang Anda berikan
-from app.schemas import WarehouseCreate, WarehouseUpdate, RackCreate, RackUpdate, StockPlacementCreate
+# Impor skema yang dibutuhkan oleh fungsi-fungsi di file ini
+from app.schemas.product.product import ProductCreate, ProductUpdate
+from app.schemas.product.batch import BatchCreate, BatchUpdate
+from app.schemas.product.allocation import AllocationCreate, AllocationUpdate
 
-# Impor exception kustom
-from app.core.exceptions import NotFoundException, BadRequestException
+# Impor exception kustom untuk penanganan error yang bersih dan eksplisit
+from app.core.exceptions import NotFoundException, BadRequestException, UnprocessableEntityException
 
-# --- Warehouse Services ---
+# ===================================================================
+# 1. PRODUCT SERVICES
+# ===================================================================
 
-async def get_warehouse_by_id(db: AsyncSession, warehouse_id: int) -> Optional[Warehouse]:
+async def get_product_by_id(db: AsyncSession, product_id: int) -> Optional[Product]:
     """
-    Mengambil satu warehouse berdasarkan ID, dengan semua relasi bertingkat sudah di-load.
+    Mengambil satu produk berdasarkan ID dengan SEMUA relasi yang dibutuhkan
+    oleh skema `schemas.Product` sudah di-eager load.
     """
     query = (
-        select(Warehouse)
-        .where(Warehouse.id == warehouse_id)
+        select(Product)
+        .where(Product.id == product_id)
         .options(
-            # ✅ PERBAIKAN: Gunakan selectinload bertingkat (chained)
-            selectinload(Warehouse.racks).options(
-                selectinload(Rack.placement),
-                selectinload(Rack.location_type)
-            ),
-            selectinload(Warehouse.temperature_type)
+            selectinload(Product.product_type),
+            selectinload(Product.package_type),
+            selectinload(Product.temperature_type),
+            selectinload(Product.prices),
+            selectinload(Product.batches),
+            selectinload(Product.sales_order_items)
         )
     )
     result = await db.execute(query)
     return result.scalar_one_or_none()
 
-async def get_all_warehouses(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Warehouse]:
+async def get_all_products(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Product]:
     """
-    Mengambil daftar warehouse, dengan semua relasi bertingkat sudah di-load.
+    Mengambil daftar semua produk dengan paginasi dan relasi yang sudah di-eager load.
     """
     query = (
-        select(Warehouse)
+        select(Product)
+        .order_by(Product.id)
         .offset(skip)
         .limit(limit)
-        .order_by(Warehouse.id)
         .options(
-            # ✅ PERBAIKAN: Terapkan juga di sini
-            selectinload(Warehouse.racks).options(
-                selectinload(Rack.placement),
-                selectinload(Rack.location_type)
-            ),
-            selectinload(Warehouse.temperature_type)
+            selectinload(Product.product_type),
+            selectinload(Product.package_type),
+            selectinload(Product.temperature_type),
+            selectinload(Product.prices),
+            selectinload(Product.batches),
+            selectinload(Product.sales_order_items)
         )
     )
     result = await db.execute(query)
     return result.scalars().all()
 
-async def create_warehouse(db: AsyncSession, warehouse_in: WarehouseCreate) -> Warehouse:
+async def create_product(db: AsyncSession, product_in: ProductCreate) -> Product:
     """
-    Membuat warehouse baru dan mengembalikannya dengan semua relasi sudah di-load.
+    Membuat entitas produk baru. TIDAK melakukan commit.
+    Commit akan ditangani oleh dependency `get_db_session`.
     """
-    db_warehouse = Warehouse(**warehouse_in.model_dump())
-    db.add(db_warehouse)
+    db_product = Product(**product_in.model_dump())
+    db.add(db_product)
     try:
-        await db.commit()
-    except exc.IntegrityError:
-        await db.rollback()
-        raise BadRequestException(f"Warehouse with code '{warehouse_in.code}' already exists.")
-    
-    # ✅ REFACTOR: Setelah membuat, panggil get_warehouse_by_id untuk mendapatkan objek
-    # yang sudah lengkap dengan relasinya, menghindari lazy loading di respons API.
-    return await get_warehouse_by_id(db, db_warehouse.id)
+        # ✅ REFAKTOR: Hanya flush untuk mendapatkan ID dan memeriksa constraint.
+        await db.flush()
+    except exc.IntegrityError as e:
+        # ✅ REFAKTOR: Hapus `await db.rollback()`. Biarkan exception naik
+        # agar ditangani oleh manajer transaksi di dependency.
+        if "uq_products_product_code" in str(e.orig):
+            raise BadRequestException(f"Product with code '{product_in.product_code}' already exists.")
+        if "fk_products" in str(e.orig):
+             raise BadRequestException("One of the provided type IDs (product, package, temperature) is invalid.")
+        raise BadRequestException("Failed to create product due to a data conflict.")
 
-async def update_warehouse(db: AsyncSession, warehouse_id: int, warehouse_in: WarehouseUpdate) -> Warehouse:
+    complete_product = await get_product_by_id(db, db_product.id)
+    if not complete_product:
+        raise UnprocessableEntityException("Failed to retrieve product immediately after creation.")
+        
+    return complete_product
+
+async def update_product(db: AsyncSession, product_id: int, product_in: ProductUpdate) -> Product:
     """
-    Memperbarui warehouse dan mengembalikannya dengan semua relasi sudah di-load.
+    Memperbarui data produk. TIDAK melakukan commit.
     """
-    db_warehouse = await get_warehouse_by_id(db, warehouse_id)
-    if not db_warehouse:
-        raise NotFoundException(f"Warehouse with id {warehouse_id} not found.")
+    db_product = await db.get(Product, product_id)
+    if not db_product:
+        raise NotFoundException(f"Product with id {product_id} not found.")
     
-    update_data = warehouse_in.model_dump(exclude_unset=True)
+    update_data = product_in.model_dump(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(db_warehouse, key, value)
+        setattr(db_product, key, value)
         
-    db.add(db_warehouse)
+    db.add(db_product)
     try:
-        await db.commit()
+        # ✅ REFAKTOR: Hanya flush untuk mengirim perubahan ke DB dalam transaksi saat ini.
+        await db.flush()
     except exc.IntegrityError:
-        await db.rollback()
-        raise BadRequestException(f"Update failed. A warehouse with the provided code may already exist.")
+        # ✅ REFAKTOR: Hapus `await db.rollback()`.
+        raise BadRequestException("Update failed. A product with the provided code may already exist.")
         
-    # ✅ REFACTOR: Sama seperti create, panggil kembali untuk mendapatkan objek yang lengkap.
-    return await get_warehouse_by_id(db, warehouse_id)
+    return await get_product_by_id(db, product_id)
 
-async def delete_warehouse(db: AsyncSession, warehouse_id: int) -> Warehouse:
-    # ✅ REFACTOR: Gunakan get_warehouse_by_id yang sudah di-eager load untuk validasi.
-    db_warehouse = await get_warehouse_by_id(db, warehouse_id)
-    if not db_warehouse:
-        raise NotFoundException(f"Warehouse with id {warehouse_id} not found.")
-    
-    if db_warehouse.racks:
-        raise BadRequestException(f"Cannot delete warehouse '{db_warehouse.name}'. It still contains racks.")
-
-    await db.delete(db_warehouse)
-    await db.commit()
-    return db_warehouse
-
-# --- Rack Services ---
-
-async def get_rack_by_id(db: AsyncSession, rack_id: int) -> Optional[Rack]:
+async def delete_product(db: AsyncSession, product_id: int) -> Product:
     """
-    Mengambil satu rack berdasarkan ID, dengan semua relasi yang dibutuhkan sudah di-load.
+    Menghapus produk dari database. TIDAK melakukan commit.
+    """
+    db_product = await get_product_by_id(db, product_id)
+    if not db_product:
+        raise NotFoundException(f"Product with id {product_id} not found.")
+    
+    if db_product.batches:
+        raise BadRequestException(f"Cannot delete product '{db_product.name}'. It has associated batches.")
+        
+    await db.delete(db_product)
+    # ✅ REFAKTOR: Flush setelah delete untuk memastikan state konsisten.
+    await db.flush()
+    return db_product
+
+# ===================================================================
+# 2. BATCH SERVICES
+# ===================================================================
+
+async def get_batch_by_id(db: AsyncSession, batch_id: int) -> Optional[Batch]:
+    """
+    Mengambil satu batch berdasarkan ID, dengan relasi yang aman untuk API.
     """
     query = (
-        select(Rack)
-        .where(Rack.id == rack_id)
-        # ✅ REFACTOR: Eager load relasi yang ada di skema Pydantic Rack.
+        select(Batch)
+        .where(Batch.id == batch_id)
         .options(
-            selectinload(Rack.location_type),
-            selectinload(Rack.placement).selectinload(StockPlacement.allocation)
+            selectinload(Batch.product),
+            selectinload(Batch.allocations)
         )
     )
     result = await db.execute(query)
     return result.scalar_one_or_none()
 
-async def get_all_racks(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Rack]:
+async def get_all_batches(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Batch]:
     """
-    Mengambil daftar rack, dengan semua relasi yang dibutuhkan sudah di-load.
+    Mengambil daftar semua batch dengan paginasi.
     """
     query = (
-        select(Rack)
+        select(Batch)
+        .order_by(Batch.id)
         .offset(skip)
         .limit(limit)
-        .order_by(Rack.id)
-        # ✅ REFACTOR: Eager load relasi untuk setiap item dalam daftar.
-        .options(
-            selectinload(Rack.location_type),
-            selectinload(Rack.placement)
-        )
+        .options(selectinload(Batch.product))
     )
     result = await db.execute(query)
     return result.scalars().all()
 
-async def create_rack(db: AsyncSession, rack_in: RackCreate) -> Rack:
+async def create_batch(db: AsyncSession, batch_in: BatchCreate) -> Batch:
     """
-    Membuat rack baru dan mengembalikannya dengan semua relasi sudah di-load.
+    Mencatat penerimaan batch baru. TIDAK melakukan commit.
     """
-    warehouse = await get_warehouse_by_id(db, rack_in.warehouse_id)
-    if not warehouse:
-        raise NotFoundException(f"Cannot create rack. Warehouse with id {rack_in.warehouse_id} not found.")
-    
-    db_rack = Rack(**rack_in.model_dump())
-    db.add(db_rack)
-    try:
-        await db.commit()
-    except exc.IntegrityError:
-        await db.rollback()
-        raise BadRequestException(f"Rack with code '{rack_in.code}' already exists.")
-    
-    # ✅ REFACTOR: Panggil kembali untuk mendapatkan objek yang lengkap.
-    return await get_rack_by_id(db, db_rack.id)
+    product = await db.get(Product, batch_in.product_id)
+    if not product:
+        raise NotFoundException(f"Cannot create batch. Product with id {batch_in.product_id} not found.")
 
-async def update_rack(db: AsyncSession, rack_id: int, rack_in: RackUpdate) -> Rack:
+    db_batch = Batch(**batch_in.model_dump())
+    db.add(db_batch)
+    try:
+        await db.flush()
+    except exc.IntegrityError:
+        raise BadRequestException(f"Failed to create batch. A unique constraint might have been violated.")
+        
+    return await get_batch_by_id(db, db_batch.id)
+
+async def update_batch(db: AsyncSession, batch_id: int, batch_in: BatchUpdate) -> Batch:
     """
-    Memperbarui rack dan mengembalikannya dengan semua relasi sudah di-load.
+    Memperbarui data batch yang ada. TIDAK melakukan commit.
     """
-    db_rack = await get_rack_by_id(db, rack_id)
-    if not db_rack:
-        raise NotFoundException(f"Rack with id {rack_id} not found.")
-    
-    update_data = rack_in.model_dump(exclude_unset=True)
+    db_batch = await db.get(Batch, batch_id)
+    if not db_batch:
+        raise NotFoundException(f"Batch with id {batch_id} not found.")
+        
+    update_data = batch_in.model_dump(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(db_rack, key, value)
+        setattr(db_batch, key, value)
         
-    db.add(db_rack)
-    try:
-        await db.commit()
-    except exc.IntegrityError:
-        await db.rollback()
-        raise BadRequestException(f"Update failed. A rack with the provided code may already exist.")
+    db.add(db_batch)
+    await db.flush()
+    return await get_batch_by_id(db, batch_id)
+
+async def delete_batch(db: AsyncSession, batch_id: int) -> Batch:
+    """
+    Menghapus batch. TIDAK melakukan commit.
+    """
+    db_batch = await get_batch_by_id(db, batch_id)
+    if not db_batch:
+        raise NotFoundException(f"Batch with id {batch_id} not found.")
         
-    # ✅ REFACTOR: Panggil kembali untuk mendapatkan objek yang lengkap.
-    return await get_rack_by_id(db, rack_id)
-
-async def delete_rack(db: AsyncSession, rack_id: int) -> Rack:
-    # ✅ REFACTOR: Gunakan get_rack_by_id yang sudah di-eager load untuk validasi.
-    db_rack = await get_rack_by_id(db, rack_id)
-    if not db_rack:
-        raise NotFoundException(f"Rack with id {rack_id} not found.")
-    
-    if db_rack.placement:
-        raise BadRequestException(f"Cannot delete rack {db_rack.code}. It is currently occupied.")
+    if db_batch.allocations:
+        raise BadRequestException(f"Cannot delete batch with lot number '{db_batch.lot_number}'. It has associated allocations.")
         
-    await db.delete(db_rack)
-    await db.commit()
-    return db_rack
+    await db.delete(db_batch)
+    await db.flush()
+    return db_batch
 
-# --- Stock Placement Services ---
-# (Fungsi-fungsi ini tidak perlu banyak diubah karena mereka tidak mengembalikan objek dengan relasi kompleks
-# yang perlu diserialisasi, kecuali jika skema StockPlacement Anda juga memiliki relasi yang dalam)
+# ===================================================================
+# 3. ALLOCATION SERVICES
+# ===================================================================
 
-async def get_placement_by_id(db: AsyncSession, placement_id: int) -> Optional[StockPlacement]:
-    query = select(StockPlacement).where(StockPlacement.id == placement_id)
+async def get_allocation_by_id(db: AsyncSession, allocation_id: int) -> Optional[Allocation]:
+    """
+    Mengambil satu alokasi berdasarkan ID, dengan relasi yang aman untuk API.
+    """
+    query = (
+        select(Allocation)
+        .where(Allocation.id == allocation_id)
+        .options(
+            selectinload(Allocation.allocation_type),
+            selectinload(Allocation.batch).selectinload(Batch.product),
+            selectinload(Allocation.placements),
+            selectinload(Allocation.customer)
+        )
+    )
     result = await db.execute(query)
     return result.scalar_one_or_none()
 
-async def place_stock_in_rack(db: AsyncSession, placement_in: StockPlacementCreate) -> StockPlacement:
-    # ... (kode Anda di sini sudah cukup baik karena menggunakan nested transaction) ...
-    # Namun, untuk mengembalikan objek yang lengkap, kita akan query ulang.
-    
-    new_placement_id: Optional[int] = None
+async def create_allocation(db: AsyncSession, allocation_in: AllocationCreate) -> Allocation:
+    """
+    Membuat alokasi baru dari sebuah batch. Menggunakan savepoint (begin_nested).
+    """
+    new_allocation_id: Optional[int] = None
+    # `begin_nested` menciptakan savepoint. Jika ada error di dalam blok ini,
+    # hanya perubahan di dalam blok ini yang di-rollback, bukan seluruh transaksi.
     async with db.begin_nested():
-        # ... (validasi Anda tetap sama) ...
-        rack_query = select(Rack).where(Rack.id == placement_in.rack_id).with_for_update()
-        rack = (await db.execute(rack_query)).scalar_one_or_none()
-        alloc_query = select(Allocation).where(Allocation.id == placement_in.allocation_id).options(selectinload(Allocation.placements)).with_for_update()
-        allocation = (await db.execute(alloc_query)).scalar_one_or_none()
-        if not rack: raise NotFoundException(f"Rack with id {placement_in.rack_id} not found.")
-        if not allocation: raise NotFoundException(f"Allocation with id {placement_in.allocation_id} not found.")
-        if rack.placement: raise BadRequestException(f"Rack {rack.code} is already occupied.")
-        # ... (validasi kuantitas Anda tetap sama) ...
+        batch_query = select(Batch).where(Batch.id == allocation_in.batch_id).options(selectinload(Batch.allocations)).with_for_update()
+        batch = (await db.execute(batch_query)).scalar_one_or_none()
 
-        db_placement = StockPlacement(**placement_in.model_dump())
-        db.add(db_placement)
+        if not batch:
+            raise NotFoundException(f"Batch with id {allocation_in.batch_id} not found.")
+
+        total_already_allocated = sum(alloc.allocated_quantity for alloc in batch.allocations)
+        available_for_allocation = batch.received_quantity - total_already_allocated
+
+        if allocation_in.allocated_quantity > available_for_allocation:
+            raise UnprocessableEntityException(
+                f"Cannot allocate {allocation_in.allocated_quantity} units. "
+                f"Only {available_for_allocation} units are available from batch {batch.lot_number}."
+            )
+        
+        db_allocation = Allocation(**allocation_in.model_dump())
+        db.add(db_allocation)
         await db.flush()
-        new_placement_id = db_placement.id
+        new_allocation_id = db_allocation.id
     
-    # ✅ REFACTOR: Query ulang untuk mendapatkan objek StockPlacement yang lengkap
-    # dengan relasi rack dan allocation-nya.
-    final_query = (
-        select(StockPlacement)
-        .where(StockPlacement.id == new_placement_id)
-        .options(
-            selectinload(StockPlacement.rack),
-            selectinload(StockPlacement.allocation)
-        )
-    )
-    result = await db.execute(final_query)
-    return result.scalar_one()
+    if not new_allocation_id:
+        raise UnprocessableEntityException("Failed to create allocation and get its ID.")
 
+    return await get_allocation_by_id(db, new_allocation_id)
 
-async def remove_stock_from_rack(db: AsyncSession, rack_id: int) -> Rack:
-    # ... (kode Anda di sini sudah cukup baik) ...
+async def update_allocation(db: AsyncSession, allocation_id: int, allocation_in: AllocationUpdate) -> Allocation:
+    """
+    Memperbarui alokasi yang ada, dengan validasi yang cermat di dalam savepoint.
+    """
     async with db.begin_nested():
-        rack_query = select(Rack).where(Rack.id == rack_id).options(selectinload(Rack.placement)).with_for_update()
-        rack = (await db.execute(rack_query)).scalar_one_or_none()
-        if not rack: raise NotFoundException(f"Rack with id {rack_id} not found.")
-        if not rack.placement: raise BadRequestException(f"Rack {rack.code} is already empty.")
-        await db.delete(rack.placement)
+        db_allocation = await get_allocation_by_id(db, allocation_id)
+        if not db_allocation:
+            raise NotFoundException(f"Allocation with id {allocation_id} not found.")
+        
+        update_data = allocation_in.model_dump(exclude_unset=True)
+        
+        if "allocated_quantity" in update_data:
+            new_quantity = update_data["allocated_quantity"]
+            total_placed = sum(p.quantity for p in db_allocation.placements)
+            
+            if new_quantity < db_allocation.shipped_quantity:
+                raise BadRequestException(f"Cannot set allocated quantity to {new_quantity}. {db_allocation.shipped_quantity} units have already been shipped.")
+            if new_quantity < total_placed:
+                raise BadRequestException(f"Cannot set allocated quantity to {new_quantity}. {total_placed} units have already been placed in racks.")
+
+        for key, value in update_data.items():
+            setattr(db_allocation, key, value)
+            
+        db.add(db_allocation)
         await db.flush()
-    
-    # ✅ REFACTOR: Panggil kembali untuk mendapatkan objek Rack yang sudah ter-update dan lengkap.
-    return await get_rack_by_id(db, rack_id)
+        
+    return await get_allocation_by_id(db, allocation_id)
+
+async def delete_allocation(db: AsyncSession, allocation_id: int) -> Allocation:
+    """
+    Menghapus alokasi. TIDAK melakukan commit.
+    """
+    db_allocation = await get_allocation_by_id(db, allocation_id)
+    if not db_allocation:
+        raise NotFoundException(f"Allocation with id {allocation_id} not found.")
+        
+    if db_allocation.placements:
+        raise BadRequestException(f"Cannot delete allocation. It has stock placed in racks.")
+    if db_allocation.shipped_quantity > 0:
+        raise BadRequestException(f"Cannot delete allocation. It has items that have already been shipped.")
+        
+    await db.delete(db_allocation)
+    await db.flush()
+    return db_allocation
