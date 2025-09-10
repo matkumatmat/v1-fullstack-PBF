@@ -33,6 +33,8 @@ from .routers import (
     #order_process,
 )
 
+from app.api.routers.process import inbound
+
 # --- Inisialisasi Router Utama ---
 api_router = APIRouter()
 
@@ -63,3 +65,4 @@ api_router.include_router(warehouse_routes.router)
 #api_router.include_router(customer.router)
 api_router.include_router(product_routes.router)
 #api_router.include_router(order_process.router)
+api_router.include_router(inbound.router)
