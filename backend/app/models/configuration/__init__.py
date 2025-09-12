@@ -1,14 +1,21 @@
-from .configuration import (
+# file : app/models/configuration/__init__..py
+
+from .base import (
     TimestampMixin, 
     PublicIDMixin, 
-    BaseModel,
+    BaseModel
+)
+from .enums import (
     AddressTypeEnum,
     WarehouseStatusEnum,
     RackStatusEnum,
     AllocationStatusEnum,
     SalesOrderStatusEnum,
     ShippingPlanStatusEnum,
-    MovementDirectionEnum,
+    MovementDirectionEnum
+)
+
+from .type import (
     ProductType,
     PackageType,
     TemperatureType,
@@ -28,46 +35,23 @@ from .configuration import (
     sales_order_item_sector_association,      
     sales_order_item_allocation_association,  
 )
-from .order_process import (
-    SalesOrder, 
-    SalesOrderItem,
-    ShippingPlan,
-    ShippingPlanItem
-)
-from .product import (
-    Product,
-    Batch,
-    Allocation
-)
-from .users import (
-    Customer,
-    CustomerAddress
-)
-from .warehouse import (
-    Warehouse,
-    Rack,
-    StockPlacement
-)
 
-__all__=[
+__all__ = [
     "TimestampMixin","PublicIDMixin","BaseModel",
+
     "AddressTypeEnum","WarehouseStatusEnum","RackStatusEnum",
     "AllocationStatusEnum","SalesOrderStatusEnum",
     "ShippingPlanStatusEnum","MovementDirectionEnum"
+
     "ProductType","PackageType","TemperatureType",
     "AllocationType","SectorType","CustomerType","DocumentType",
     "StatusType","LocationType","PackagingMaterial",
     "PackagingBoxType","PriorityLevel","NotificationType",
     "DeliveryType", "ProductPrice","MovementType",
     "sales_order_item_sector_association",
-    "sales_order_item_allocation_association"   
+    "sales_order_item_allocation_association"
 
-    "Racks","Warehouse","StockPlacement"
 
-    "Customer","CustomerAddress"
 
-    "Product","Batch","Allocation"
 
-    "SalesOrder","SalesOrderItem",
-    "ShippingPlan","ShippingPlanItem"
 ]

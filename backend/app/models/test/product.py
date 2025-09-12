@@ -56,10 +56,6 @@ class Product(BaseModel):
 
 class Batch(BaseModel):
     __tablename__ = 'batches'
-
-    # id, public_id, created_at, updated_at diwarisi dari BaseModel.
-    # public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True) # <-- DIGANTIKAN OLEH MIXIN
-
     lot_number: Mapped[str] = mapped_column(String(50), nullable=False)
     expiry_date: Mapped[date] = mapped_column(Date, nullable=False)
     NIE: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -68,12 +64,10 @@ class Batch(BaseModel):
     receipt_date: Mapped[date] = mapped_column(Date, nullable=False)
     receipt_pic: Mapped[Optional[str]] = mapped_column(String(25))
     receipt_doc_url: Mapped[Optional[str]] = mapped_column(String(255))
-    
     length: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     width: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     height: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     weight: Mapped[Optional[float]] = mapped_column(Numeric(10, 3))
-
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'), nullable=False)
 
     # --- Relationships ---

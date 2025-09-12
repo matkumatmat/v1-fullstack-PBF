@@ -17,18 +17,9 @@ if TYPE_CHECKING:
     from .type import CustomerType, SectorType
     from .order_process import SalesOrder
     from .product import Allocation
-    # Placeholder untuk model yang belum ada
-    # class ConsignmentAgreement: pass
-    # class ConsignmentStatement: pass
-    # class Shipment: pass
-
 
 class Customer(BaseModel):
     __tablename__ = 'customers'
-    
-    # id, public_id, created_at, updated_at diwarisi dari BaseModel.
-    # public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True) # <-- DIGANTIKAN OLEH MIXIN
-
     code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     

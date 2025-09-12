@@ -7,20 +7,15 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 
-# Impor model yang relevan
 from app.models.order_process import SalesOrder, SalesOrderItem, ShippingPlan, ShippingPlanItem
-from app.models.customer import Customer
+from app.models.users import Customer
 from app.models.product import Product
 
-# Impor skema yang telah kita finalisasi
 from app.schemas.order_process.sales_order import SalesOrderCreate, SalesOrderUpdate
 from app.schemas.order_process.shipping_plan import ShippingPlanCreate, ShippingPlanUpdate
-
-# Impor exception kustom
 from app.core.exceptions import NotFoundException, BadRequestException, UnprocessableEntityException
-from app.models.enums import SalesOrderStatusEnum, ShippingPlanStatusEnum
+from app.models.configuration import SalesOrderStatusEnum, ShippingPlanStatusEnum
 
-# --- SalesOrder Services ---
 
 async def get_sales_order_by_id(db: AsyncSession, so_id: int) -> Optional[SalesOrder]:
     query = (

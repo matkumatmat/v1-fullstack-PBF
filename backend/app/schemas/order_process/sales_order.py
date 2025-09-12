@@ -7,7 +7,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-from app.models.enums import SalesOrderStatusEnum
+from app.models.configuration import SalesOrderStatusEnum
 from .sales_order_item import SalesOrderItem, SalesOrderItemCreate # <-- Impor skema Create
 if TYPE_CHECKING:
     from ..customer.customer import Customer

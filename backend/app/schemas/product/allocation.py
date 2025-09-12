@@ -7,7 +7,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-from app.models.enums import AllocationStatusEnum
+from app.models.configuration import AllocationStatusEnum
 from ..type.allocation_type import AllocationType
 if TYPE_CHECKING:
     from ..customer.customer import Customer

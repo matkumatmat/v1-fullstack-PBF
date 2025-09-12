@@ -7,7 +7,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing_extensions import Annotated
 
-from app.models.enums import AddressTypeEnum
+from app.models.configuration import AddressTypeEnum
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .customer import Customer

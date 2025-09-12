@@ -6,7 +6,7 @@ from typing import Optional, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-from app.models.enums import ShippingPlanStatusEnum
+from app.models.configuration import ShippingPlanStatusEnum
 if TYPE_CHECKING:
     from .sales_order_item import SalesOrderItem
 

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update as sqlalchemy_update, delete as sqlalchemy_delete
 
-from app.models.base import BaseModel as DBModel
+from app.models.configuration import BaseModel as DBModel
 
 # Definisikan tipe generik untuk model dan skema kita
 ModelType = TypeVar("ModelType", bound=DBModel)

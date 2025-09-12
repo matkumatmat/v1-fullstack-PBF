@@ -6,7 +6,7 @@ from typing import Optional, List
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-from app.models.enums import WarehouseStatusEnum
+from app.models.configuration import WarehouseStatusEnum
 from ..type.temperature_type import TemperatureType
 from .rack import Rack
 from typing import TYPE_CHECKING

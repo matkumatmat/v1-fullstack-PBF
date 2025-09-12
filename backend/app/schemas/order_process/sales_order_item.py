@@ -7,7 +7,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-from app.models.enums import SalesOrderStatusEnum
+from app.models.configuration import SalesOrderStatusEnum
 from ..type.sector_type import SectorType
 from ..type.allocation_type import AllocationType
 from ..type.product_price import ProductPrice

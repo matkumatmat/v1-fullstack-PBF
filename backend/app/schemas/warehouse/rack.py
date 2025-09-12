@@ -6,7 +6,7 @@ from typing import Optional, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-from app.models.enums import RackStatusEnum
+from app.models.configuration import RackStatusEnum
 from ..type.location_type import LocationType
 
 # ✅ FIXED: Use TYPE_CHECKING for circular references

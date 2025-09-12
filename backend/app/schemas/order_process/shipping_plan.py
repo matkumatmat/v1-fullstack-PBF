@@ -6,7 +6,7 @@ from typing import Optional, List, TYPE_CHECKING
 from pydantic import BaseModel, Field, ConfigDict
 from typing_extensions import Annotated
 
-from app.models.enums import ShippingPlanStatusEnum
+from app.models.configuration import ShippingPlanStatusEnum
 from .shipping_plan_item import ShippingPlanItem, ShippingPlanItemCreate # <-- Impor skema Create
 
 if TYPE_CHECKING:

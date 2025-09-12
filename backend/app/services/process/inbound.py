@@ -6,8 +6,8 @@ from sqlalchemy.orm import load_only, selectinload
 # Impor model yang relevan
 from app.models.product import Product
 from app.models.warehouse import Rack, Warehouse
-from app.models.customer import Customer
-from app.models.type import AllocationType
+from app.models.users import Customer
+from app.models.configuration import AllocationType
 from app.schemas.process.inbound import InboundPayload, InboundResponse, InboundFormData
 from app.schemas.warehouse.stock_placement import StockPlacementCreate
 from app.schemas.product.batch import BatchCreate

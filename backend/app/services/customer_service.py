@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 # Impor model yang relevan
-from app.models.customer import Customer, CustomerAddress
+from app.models.users import Customer, CustomerAddress
 
 # Impor skema yang telah kita finalisasi
 from app.schemas.customer.customer import (

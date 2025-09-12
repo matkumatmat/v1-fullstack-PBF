@@ -1,6 +1,6 @@
 # file: app/services/type_service.py
 
-from app.models import (
+from app.models.configuration import (
     AllocationType,
     CustomerType,
     DeliveryType,
