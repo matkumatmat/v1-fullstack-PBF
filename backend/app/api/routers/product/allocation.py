@@ -10,7 +10,7 @@ router = APIRouter()
 @router.put("/{allocation_id}/approve", response_model=AllocationSchema)
 async def approve_allocation(
     allocation_id: int,
-    db: AsyncSession = Depends(deps.get_db)
+    db: AsyncSession = Depends(deps.get_db_session)
     # current_user: User = Depends(deps.get_current_active_user) # Tambahkan otorisasi
 ):
     """Endpoint untuk menyetujui alokasi yang dikarantina."""

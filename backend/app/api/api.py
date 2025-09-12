@@ -28,12 +28,17 @@ from app.api.routers.type import (
 # 2. Impor modul router entitas utama
 from .routers import (
     warehouse_routes,
-    #customer,
-    product_routes,
+    process,
+    product,
     #order_process,
 )
 
-from app.api.routers.process import inbound
+from app.api.routers.process import (
+    inbound, consignment, tender
+)
+from app.api.routers.product import (
+    allocation
+)
 
 # --- Inisialisasi Router Utama ---
 api_router = APIRouter()
@@ -63,6 +68,9 @@ api_router.include_router(temperature_type.router)
 # Router ini didefinisikan secara manual di file masing-masing.
 api_router.include_router(warehouse_routes.router)
 #api_router.include_router(customer.router)
-api_router.include_router(product_routes.router)
+api_router.include_router(product.router)
 #api_router.include_router(order_process.router)
 api_router.include_router(inbound.router)
+api_router.include_router(consignment.router)
+api_router.include_router(tender.router)
+api_router.include_router(allocation.router)

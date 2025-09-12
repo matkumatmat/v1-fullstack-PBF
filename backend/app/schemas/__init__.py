@@ -9,6 +9,7 @@ from . import product
 from . import warehouse
 from . import order_process
 from . import type as type_schemas
+from . import process
 
 # --- [BAGIAN 2: DEFINISI API PUBLIK (`__all__`)] ---
 __all__ = [
@@ -45,6 +46,8 @@ __all__ = [
     "DeliveryType", "DeliveryTypeCreate", "DeliveryTypeUpdate",
     "ProductPrice", "ProductPriceCreate", "ProductPriceUpdate",
     "MovementType", "MovementTypeCreate", "MovementTypeUpdate",
+
+    "consignment"
 ]
 
 # --- [BAGIAN 3: POPULATE NAMESPACE] ---

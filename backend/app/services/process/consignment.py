@@ -3,8 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import date
 from sqlalchemy.orm import selectinload, joinedload
 
-
-from app.models import Allocation, ConsignmentAgreement, Consignment, ConsignmentItem
+from app.models.product import Allocation
 from app.models.process import ConsignmentAgreement, Consignment, ConsignmentItem
 from app.schemas.process.consignment import ConsignmentReallocationPayload
 from app.core.exceptions import NotFoundException, UnprocessableEntityException, BadRequestException
