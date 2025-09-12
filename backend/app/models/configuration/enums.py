@@ -22,6 +22,7 @@ class AllocationStatusEnum(str, enum.Enum):
     ACTIVE = "active"
     CLOSED = "closed"
     CANCELLED = "cancelled"
+    QUARANTINE = "quarantine"
 
 class SalesOrderStatusEnum(str, enum.Enum):
     PENDING = "PENDING"

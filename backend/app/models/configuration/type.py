@@ -12,10 +12,10 @@ from .enums import MovementDirectionEnum
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .product import Product, Allocation
-    from .warehouse import Warehouse
-    from .customer import Customer
-    from .order_process import SalesOrderItem
+    from ..product import Product, Allocation
+    from ..warehouse import Warehouse
+    from ..users import Customer
+    from ..order_process import SalesOrderItem
 
 sales_order_item_sector_association = Table(
     'so_item_sector_association',

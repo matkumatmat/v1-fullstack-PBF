@@ -5,7 +5,7 @@ from sqlalchemy import (
     func
 )
 from sqlalchemy.orm import relationship
-from .base import BaseModel
+from ..ignored.base import BaseModel
 
 class ConsignmentAgreement(BaseModel):
     """Model untuk Perjanjian Konsinyasi dengan Customer"""

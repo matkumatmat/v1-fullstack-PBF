@@ -7,11 +7,16 @@ from .inbound import (
     InboundPayload,
     InboundResponse
 )
+from .tender import(
+    TenderReallocationPayload
+)
 
 __all__ = [
     "InboundFormData",
     "InboundProductSearchSchema",
     "InboundRackSearchSchema",
     "InboundPayload",
-    "InboundResponse"
+    "InboundResponse",
+
+    "TenderReallocationPayload"
 ]

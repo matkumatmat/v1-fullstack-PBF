@@ -1,0 +1,158 @@
+app/
+├── api
+│   ├── api.py
+│   ├── deps.py
+│   ├── routers
+│   │   ├── process
+│   │   │   ├── __init__.py
+│   │   │   ├── consignment.py
+│   │   │   ├── inbound.py
+│   │   │   └── tender.py
+│   │   ├── product
+│   │   │   └── allocation.py
+│   │   ├── product_routes.py
+│   │   ├── type
+│   │   │   ├── allocation_type.py
+│   │   │   ├── customer_type.py
+│   │   │   ├── delivery_type.py
+│   │   │   ├── document_type.py
+│   │   │   ├── location_type.py
+│   │   │   ├── movement_type.py
+│   │   │   ├── notification_type.py
+│   │   │   ├── package_type.py
+│   │   │   ├── packaging_box_type.py
+│   │   │   ├── packaging_material.py
+│   │   │   ├── priority_level.py
+│   │   │   ├── product_price.py
+│   │   │   ├── product_type.py
+│   │   │   ├── sector_type.py
+│   │   │   ├── status_type.py
+│   │   │   └── temperature_type.py
+│   │   └── warehouse_routes.py
+│   └── utils
+│       └── crud_router_factory.py
+├── config.py
+├── core
+│   └── exceptions.py
+├── database.py
+├── models
+│   ├── __init__.py
+│   ├── audit
+│   ├── configuration
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── enums.py
+│   │   └── type.py
+│   ├── document
+│   ├── ignored
+│   │   ├── activity_log.py
+│   │   ├── base.py
+│   │   ├── contract.py
+│   │   ├── customer.py
+│   │   ├── movement_log.py
+│   │   ├── outbound_process.py
+│   │   ├── packing_process.py
+│   │   ├── packing_slip.py
+│   │   ├── product.py
+│   │   ├── shipment.py
+│   │   ├── shipping_proses.py
+│   │   ├── track_trace.py
+│   │   ├── user.py
+│   │   └── warehouse.py
+│   ├── order_process
+│   │   ├── __init__.py
+│   │   ├── sales_order.py
+│   │   └── shipping_plan.py
+│   ├── process
+│   │   ├── __init__.py
+│   │   ├── consignment.py
+│   │   ├── contract.py
+│   │   └── sales-order.py
+│   ├── product
+│   │   ├── __init__.py
+│   │   ├── allocation.py
+│   │   ├── batch.py
+│   │   └── product.py
+│   ├── test
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── customer.py
+│   │   ├── enums.py
+│   │   ├── order_process.py
+│   │   ├── product.py
+│   │   └── type.py
+│   ├── users
+│   │   ├── __init__.py
+│   │   ├── customer.py
+│   │   └── user.py
+│   ├── warehouse
+│   │   ├── __init__.py
+│   │   ├── rack.py
+│   │   ├── stock_placement.py
+│   │   └── warehouse.py
+│   └── warehouse.py
+├── responses.py
+├── schemas
+│   ├── __init__.py
+│   ├── customer
+│   │   ├── __init__.py
+│   │   ├── customer.py
+│   │   └── customer_address.py
+│   ├── order_process
+│   │   ├── __init__.py
+│   │   ├── sales_order.py
+│   │   ├── sales_order_item.py
+│   │   ├── shipping_plan.py
+│   │   └── shipping_plan_item.py
+│   ├── process
+│   │   ├── __init__.py
+│   │   ├── consignment.py
+│   │   ├── inbound.py
+│   │   └── tender.py
+│   ├── product
+│   │   ├── __init__.py
+│   │   ├── allocation.py
+│   │   ├── batch.py
+│   │   └── product.py
+│   ├── type
+│   │   ├── __init__.py
+│   │   ├── allocation_type.py
+│   │   ├── base.py
+│   │   ├── customer_type.py
+│   │   ├── delivery_type.py
+│   │   ├── document_type.py
+│   │   ├── location_type.py
+│   │   ├── movement_type.py
+│   │   ├── notification_type.py
+│   │   ├── package_type.py
+│   │   ├── packaging_box_type.py
+│   │   ├── packaging_material.py
+│   │   ├── priority_level.py
+│   │   ├── product_price.py
+│   │   ├── product_type.py
+│   │   ├── sector_type.py
+│   │   ├── status_type.py
+│   │   └── temperature_type.py
+│   └── warehouse
+│       ├── __init__.py
+│       ├── rack.py
+│       ├── stock_placement.py
+│       └── warehouse.py
+├── services
+│   ├── __init__.py
+│   ├── base.py
+│   ├── customer_service.py
+│   ├── order_process_service.py
+│   ├── process
+│   │   ├── __init__.py
+│   │   ├── consignment.py
+│   │   ├── inbound.py
+│   │   └── tender.py
+│   ├── product
+│   │   ├── __init__.py
+│   │   └── allocation.py
+│   ├── product_service.py
+│   ├── type_service.py
+│   └── warehouse_service.py
+├── utils
+└── workdir.txt
