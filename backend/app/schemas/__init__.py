@@ -15,8 +15,8 @@ from .product.allocation import Allocation, AllocationCreate, AllocationUpdate
 
 # Warehouse
 from .warehouse.warehouse import Warehouse, WarehouseCreate, WarehouseUpdate
-from .warehouse.rack import Rack, RackCreate, RackUpdate
-from .warehouse.stock_placement import StockPlacement, StockPlacementCreate, StockPlacementUpdate
+from .warehouse.rack import Rack, RackCreate, RackUpdate, RackInPlacement
+from .warehouse.stock_placement import StockPlacement, StockPlacementCreate, StockPlacementUpdate, PlacementInRack
 
 # Order Process
 from .order_process.sales_order import SalesOrder, SalesOrderCreate, SalesOrderUpdate
@@ -58,7 +58,7 @@ __all__ = [
     # Product
     "Product", "ProductCreate", "ProductUpdate", "ProductInBatch", "Batch", "BatchCreate", "BatchUpdate", "Allocation", "AllocationCreate", "AllocationUpdate",
     # Warehouse
-    "Warehouse", "WarehouseCreate", "WarehouseUpdate", "Rack", "RackCreate", "RackUpdate", "StockPlacement", "StockPlacementCreate", "StockPlacementUpdate",
+    "Warehouse", "WarehouseCreate", "WarehouseUpdate", "Rack", "RackCreate", "RackUpdate", "StockPlacement", "StockPlacementCreate", "StockPlacementUpdate","PlacementInRack","RackInPlacement",
     # Order Process
     "SalesOrder", "SalesOrderCreate", "SalesOrderUpdate", "SalesOrderItem", "SalesOrderItemCreate", "SalesOrderItemUpdate", "ShippingPlan", "ShippingPlanCreate", "ShippingPlanUpdate", "ShippingPlanItem", "ShippingPlanItemCreate", "ShippingPlanItemUpdate",
     # Process

@@ -1,13 +1,13 @@
 # file: app/schemas/warehouse/__init__.py (CLEANED UP)
 
-from .stock_placement import StockPlacement, StockPlacementCreate, StockPlacementUpdate
-from .rack import Rack, RackCreate, RackUpdate
+from .stock_placement import StockPlacement, StockPlacementCreate, StockPlacementUpdate, PlacementInRack
+from .rack import Rack, RackCreate, RackUpdate, RackInPlacement
 from .warehouse import Warehouse, WarehouseCreate, WarehouseUpdate
 
 __all__ = [
     "StockPlacement", "StockPlacementCreate", "StockPlacementUpdate",
-    "Rack", "RackCreate", "RackUpdate", 
-    "Warehouse", "WarehouseCreate", "WarehouseUpdate",
+    "Rack", "RackCreate", "RackUpdate", "RackInPlacement"
+    "Warehouse", "WarehouseCreate", "WarehouseUpdate", "PlacementInRack"
 ]
 
 # ❌ REMOVED: Hapus redundant model_rebuild() calls

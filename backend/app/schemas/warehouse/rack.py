@@ -12,7 +12,7 @@ from ..type.location_type import LocationType
 # ✅ FIXED: Use TYPE_CHECKING for circular references
 if TYPE_CHECKING:
     from .warehouse import Warehouse
-    from .stock_placement import StockPlacement
+    from .stock_placement import StockPlacement, PlacementInRack
 
 # --- Rack Schemas ---
 
@@ -55,6 +55,18 @@ class Rack(RackBase):
     location_type: Optional[LocationType] = None
     
     # ✅ FIXED: Use string annotations for forward references
-    placement: Optional['StockPlacement'] = None
+    placement: Optional['PlacementInRack'] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class RackInPlacement(RackBase):
+    """
+    Representasi Rack saat dilihat DARI DALAM StockPlacement.
+    TIDAK menyertakan relasi 'placement' untuk memutus lingkaran.
+    """
+    id: int
+    public_id: uuid.UUID
+    status: RackStatusEnum
+    # Perhatikan: field 'placement' tidak ada di sini.
+    
+    model_config = ConfigDict(from_attributes=True)    

@@ -49,4 +49,4 @@ class Batch(BaseModel):
     # menggunakan query SQL agregat (`func.sum()`) untuk performa yang dapat diprediksi.
 
     def __repr__(self) -> str:
-        return f'<Batch id={self.id} lot_number="{self.lot_number}" product_id={self.product_id}>'
+        return f"<Batch(id={self.id})>"

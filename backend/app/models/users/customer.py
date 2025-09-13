@@ -52,7 +52,8 @@ class Customer(BaseModel):
         return [addr for addr in self.addresses if addr.address_type == AddressTypeEnum.DELIVERY and addr.is_active]    
     
     def __repr__(self) -> str:
-        return f'<Customer id={self.id} code="{self.code}" name="{self.name}">'
+        return f'<Customer id={self.id}>'
+
 
 class CustomerAddress(BaseModel):
     """Model untuk multiple addresses per customer"""

@@ -70,4 +70,4 @@ class Allocation(BaseModel):
     # Menaruhnya di model memberikan ilusi kesederhanaan yang berbahaya.
 
     def __repr__(self) -> str:
-        return f'<Allocation id={self.id} number="{self.allocation_number}" batch_id={self.batch_id}>'    
+        return f"<Allocation(id={self.id})>"

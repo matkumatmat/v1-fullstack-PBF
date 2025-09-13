@@ -13,7 +13,7 @@ from typing_extensions import Annotated
 # tetapi tidak dijalankan saat runtime, sehingga menghindari circular imports.
 # Resolusi forward reference ('Allocation') akan ditangani oleh __init__.py.
 if TYPE_CHECKING:
-    from .rack import Rack
+    from .rack import Rack, RackInPlacement
     from ..product.allocation import Allocation
 
 # --- StockPlacement Schemas ---
@@ -46,8 +46,21 @@ class StockPlacement(StockPlacementBase):
     placement_date: datetime
 
     # Relasi yang di-load
-    rack: Optional['Rack'] = None
+    rack: Optional['RackInPlacement'] = None
     allocation: Optional['Allocation'] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class PlacementInRack(StockPlacementBase):
+    """
+    Representasi StockPlacement saat dilihat DARI DALAM Rack.
+    TIDAK menyertakan relasi 'rack' untuk memutus lingkaran.
+    """
+    id: int
+    public_id: uuid.UUID
+    placement_date: datetime
+    allocation: Optional['Allocation'] = None # Kita tetap butuh ini
+    # Perhatikan: field 'rack' tidak ada di sini.
+
+    model_config = ConfigDict(from_attributes=True)    
 

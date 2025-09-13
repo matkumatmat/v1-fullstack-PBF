@@ -38,4 +38,4 @@ class Product(BaseModel):
     # picking_order_items: Mapped[List['PickingOrderItem']] = relationship(back_populates='product')
 
     def __repr__(self) -> str:
-        return f'<Product id={self.id} code="{self.product_code}" name="{self.name}">'
+        return f"<Product(id={self.id})>"
