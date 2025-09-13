@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/reallocate-stock", response_model=ConsignmentSchema)
 async def reallocate_for_consignment(
     payload: ConsignmentReallocationPayload,
-    db: AsyncSession = Depends(deps.get_db)
+    db: AsyncSession = Depends(deps.get_db_session)
 ):
     """Endpoint untuk mere-alokasi stok dari reguler ke konsinyasi."""
     new_consignment = await consignment.reallocate_stock_for_consignment(db, payload=payload)

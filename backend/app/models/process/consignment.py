@@ -1,298 +1,302 @@
-import uuid
-from datetime import datetime
+# file: app/models/process/consignment.py (REFACTORED TO MODERN SYNTAX)
+
+from datetime import date, datetime
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey, Text, DateTime, Date, Numeric, Boolean,
-    func
+    Integer, String, ForeignKey, Text, Date, Numeric, Boolean,
+    Enum as SQLAlchemyEnum, Table, DateTime, func
 )
-from sqlalchemy.orm import relationship
-from ..ignored.base import BaseModel
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from typing import List, Optional
+
+# ✅ FIXED: Mengimpor BaseModel yang benar dari modul configuration
+from ..configuration import BaseModel
+
+# ✅ FIXED: Menggunakan TYPE_CHECKING untuk semua referensi silang
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..users import Customer
+    from ..product import Allocation, Product, Batch
+    # Asumsi model Shipment akan ada di masa depan
+    # from ..shipment import Shipment 
+
+# --- Consignment Agreement (Master Data) ---
 
 class ConsignmentAgreement(BaseModel):
-    """Model untuk Perjanjian Konsinyasi dengan Customer"""
+    """
+    Model untuk Perjanjian Konsinyasi dengan Customer.
+    Direfaktor ke sintaks modern SQLAlchemy.
+    """
     __tablename__ = 'consignment_agreements'
-    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
-    agreement_number = Column(String(50), unique=True, nullable=False, index=True)
-    # Customer information
-    customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
-    customer = relationship('Customer', back_populates='consignment_agreements')
-    # Agreement details
-    agreement_date = Column(Date, nullable=False)
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date)
-    # Terms and conditions
-    commission_rate = Column(Numeric(5, 2))  # Percentage commission
-    payment_terms_days = Column(Integer, default=30)
-    return_policy_days = Column(Integer, default=90)  # Max days untuk return
-    # Status
-    status = Column(String(20), default='ACTIVE')  # ACTIVE, SUSPENDED, TERMINATED, EXPIRED
-    # Document references
-    contract_document_url = Column(String(255))
-    terms_document_url = Column(String(255))
-    # Tracking
-    created_by = Column(String(50))
-    created_date = Column(DateTime, default=func.current_timestamp())
-    approved_by = Column(String(50))
-    approved_date = Column(DateTime)
-    # Relationships
-    consignments = relationship('Consignment', back_populates='agreement')
     
-    def __repr__(self):
+    agreement_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    
+    # Customer information
+    customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
+    
+    # Agreement details
+    agreement_date: Mapped[date] = mapped_column(Date, nullable=False)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    end_date: Mapped[Optional[date]] = mapped_column(Date)
+    
+    # Terms and conditions
+    commission_rate: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    payment_terms_days: Mapped[int] = mapped_column(Integer, default=30)
+    return_policy_days: Mapped[int] = mapped_column(Integer, default=90)
+    
+    # Status
+    status: Mapped[str] = mapped_column(String(20), default='ACTIVE')
+    
+    # Document references
+    contract_document_url: Mapped[Optional[str]] = mapped_column(String(255))
+    terms_document_url: Mapped[Optional[str]] = mapped_column(String(255))
+    
+    # Tracking
+    created_by: Mapped[Optional[str]] = mapped_column(String(50))
+    approved_by: Mapped[Optional[str]] = mapped_column(String(50))
+    approved_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    
+    # --- Relationships ---
+    customer: Mapped['Customer'] = relationship(back_populates='consignment_agreements')
+    consignments: Mapped[List['Consignment']] = relationship(back_populates='agreement')
+    statements: Mapped[List['ConsignmentStatement']] = relationship(back_populates='agreement')
+
+    def __repr__(self) -> str:
         return f'<ConsignmentAgreement {self.agreement_number}>'
+
+# --- Consignment Process (Transactional Models) ---
 
 class Consignment(BaseModel):
     """
-    Model untuk Consignment - Alokasi khusus untuk titip jual
-    Stock keluar dari warehouse tapi masih milik perusahaan sampai terjual
+    Model untuk satu pengiriman konsinyasi.
     """
     __tablename__ = 'consignments'
     
-    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
-    consignment_number = Column(String(50), unique=True, nullable=False, index=True)
-    # Agreement reference
-    agreement_id = Column(Integer, ForeignKey('consignment_agreements.id'), nullable=False)
-    agreement = relationship('ConsignmentAgreement', back_populates='consignments')
-    # Allocation reference (Consignment adalah tipe allocation khusus)
-    allocation_id = Column(Integer, ForeignKey('allocations.id'), nullable=False)
-    allocation = relationship('Allocation', back_populates='consignments')
-    # Shipment reference (ketika consignment dikirim)
-    shipment_id = Column(Integer, ForeignKey('shipments.id'), nullable=True)
-    shipment = relationship('Shipment', back_populates='consignments')
-    # Consignment details
-    consignment_date = Column(Date, nullable=False)
-    expected_return_date = Column(Date)
-    actual_return_date = Column(Date)
-    # Financial tracking
-    total_value = Column(Numeric(15, 2))  # Total value produk yang dikonsinyasi
-    commission_rate = Column(Numeric(5, 2))  # Rate komisi untuk consignment ini
-    # Status tracking
-    status = Column(String(20), default='PENDING', nullable=False)
-    # PENDING, SHIPPED, RECEIVED_BY_CUSTOMER, PARTIALLY_SOLD, FULLY_SOLD, RETURNED, CANCELLED
+    consignment_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    
+    # Foreign Keys
+    agreement_id: Mapped[int] = mapped_column(ForeignKey('consignment_agreements.id'), nullable=False)
+    allocation_id: Mapped[int] = mapped_column(ForeignKey('allocations.id'), unique=True, nullable=False)
+    # shipment_id: Mapped[Optional[int]] = mapped_column(ForeignKey('shipments.id'))
+    
+    # Details
+    consignment_date: Mapped[date] = mapped_column(Date, nullable=False)
+    expected_return_date: Mapped[Optional[date]] = mapped_column(Date)
+    actual_return_date: Mapped[Optional[date]] = mapped_column(Date)
+    
+    # Financials
+    total_value: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
+    commission_rate: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    
+    # Status
+    status: Mapped[str] = mapped_column(String(20), default='PENDING', nullable=False)
+    
     # Notes
-    notes = Column(Text)
-    terms_conditions = Column(Text)
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+    terms_conditions: Mapped[Optional[str]] = mapped_column(Text)
     
     # Tracking
-    created_by = Column(String(50))
-    created_date = Column(DateTime, default=func.current_timestamp())
-    shipped_by = Column(String(50))
-    shipped_date = Column(DateTime)
+    created_by: Mapped[Optional[str]] = mapped_column(String(50))
+    shipped_by: Mapped[Optional[str]] = mapped_column(String(50))
+    shipped_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
-    # Relationships
-    items = relationship('ConsignmentItem', back_populates='consignment', cascade='all, delete-orphan')
-    sales = relationship('ConsignmentSale', back_populates='consignment', cascade='all, delete-orphan')
-    returns = relationship('ConsignmentReturn', back_populates='consignment', cascade='all, delete-orphan')
+    # --- Relationships ---
+    agreement: Mapped['ConsignmentAgreement'] = relationship(back_populates='consignments')
+    allocation: Mapped['Allocation'] = relationship(back_populates='consignments')
+    # shipment: Mapped[Optional['Shipment']] = relationship(back_populates='consignments')
     
-    # Properties untuk kemudahan akses
-    @property
-    def customer(self):
-        return self.agreement.customer if self.agreement else None
-    
-    @property
-    def total_quantity_shipped(self):
-        return sum(item.quantity_shipped for item in self.items)
-    
-    @property
-    def total_quantity_sold(self):
-        return sum(sale.quantity_sold for sale in self.sales)
-    
-    @property
-    def total_quantity_returned(self):
-        return sum(ret.quantity_returned for ret in self.returns)
-    
-    @property
-    def total_quantity_remaining(self):
-        return self.total_quantity_shipped - self.total_quantity_sold - self.total_quantity_returned
-    
-    @property
-    def total_sales_value(self):
-        return sum(sale.total_value for sale in self.sales)
-    
-    @property
-    def total_commission_earned(self):
-        return sum(sale.commission_amount for sale in self.sales)
-    
-    def __repr__(self):
+    items: Mapped[List['ConsignmentItem']] = relationship(back_populates='consignment', cascade='all, delete-orphan')
+    sales: Mapped[List['ConsignmentSale']] = relationship(back_populates='consignment', cascade='all, delete-orphan')
+    returns: Mapped[List['ConsignmentReturn']] = relationship(back_populates='consignment', cascade='all, delete-orphan')
+
+    def __repr__(self) -> str:
         return f'<Consignment {self.consignment_number}>'
 
 class ConsignmentItem(BaseModel):
-    """Detail item dalam consignment"""
+    """Detail item dalam satu pengiriman konsinyasi."""
     __tablename__ = 'consignment_items'
     
-    # References
-    consignment_id = Column(Integer, ForeignKey('consignments.id'), nullable=False)
-    consignment = relationship('Consignment', back_populates='items')
-    
-    # Product & batch info (dari allocation)
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    product = relationship('Product')
-    
-    batch_id = Column(Integer, ForeignKey('batches.id'), nullable=False)
-    batch = relationship('Batch')
+    # Foreign Keys
+    consignment_id: Mapped[int] = mapped_column(ForeignKey('consignments.id'), nullable=False)
+    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'), nullable=False)
+    batch_id: Mapped[int] = mapped_column(ForeignKey('batches.id'), nullable=False)
     
     # Quantities
-    quantity_shipped = Column(Integer, nullable=False)
-    quantity_sold = Column(Integer, default=0)
-    quantity_returned = Column(Integer, default=0)
+    quantity_shipped: Mapped[int] = mapped_column(Integer, nullable=False)
+    quantity_sold: Mapped[int] = mapped_column(Integer, default=0)
+    quantity_returned: Mapped[int] = mapped_column(Integer, default=0)
     
     # Pricing
-    unit_value = Column(Numeric(12, 2))  # Nilai per unit
-    total_value = Column(Numeric(15, 2))  # Total nilai item ini
-    selling_price = Column(Numeric(12, 2))  # Harga jual yang disepakati
-    
-    # Status per item
-    status = Column(String(20), default='SHIPPED')  # SHIPPED, PARTIALLY_SOLD, SOLD, RETURNED
-    
-    # Tracking
-    expiry_date = Column(Date)  # Copy dari batch untuk tracking
-    lot_number = Column(String(50))  # Copy dari batch
-    
-    # Notes
-    notes = Column(Text)
-    
-    @property
-    def quantity_remaining(self):
-        return self.quantity_shipped - self.quantity_sold - self.quantity_returned
-    
-    def __repr__(self):
-        return f'<ConsignmentItem {self.consignment.consignment_number} - {self.product.name}>'
-
-class ConsignmentSale(BaseModel):
-    """Model untuk tracking penjualan dari consignment"""
-    __tablename__ = 'consignment_sales'
-    
-    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
-    sale_number = Column(String(50), unique=True, nullable=False)
-    
-    # References
-    consignment_id = Column(Integer, ForeignKey('consignments.id'), nullable=False)
-    consignment = relationship('Consignment', back_populates='sales')
-    
-    consignment_item_id = Column(Integer, ForeignKey('consignment_items.id'), nullable=False)
-    consignment_item = relationship('ConsignmentItem')
-    
-    # Sale details
-    sale_date = Column(Date, nullable=False)
-    quantity_sold = Column(Integer, nullable=False)
-    unit_price = Column(Numeric(12, 2), nullable=False)
-    total_value = Column(Numeric(15, 2), nullable=False)
-    
-    # Commission calculation
-    commission_rate = Column(Numeric(5, 2))
-    commission_amount = Column(Numeric(12, 2))
-    net_amount = Column(Numeric(12, 2))  # Amount after commission
-    
-    # Customer info (end customer yang beli)
-    end_customer_name = Column(String(100))
-    end_customer_info = Column(Text)
-    
-    # Document references
-    invoice_number = Column(String(50))
-    receipt_document_url = Column(String(255))
+    unit_value: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    total_value: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
+    selling_price: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
     
     # Status
-    status = Column(String(20), default='CONFIRMED')  # PENDING, CONFIRMED, PAID, CANCELLED
+    status: Mapped[str] = mapped_column(String(20), default='SHIPPED')
+    
+    # Tracking (denormalized for performance and history)
+    expiry_date: Mapped[Optional[date]] = mapped_column(Date)
+    lot_number: Mapped[Optional[str]] = mapped_column(String(50))
+    
+    notes: Mapped[Optional[str]] = mapped_column(Text)
+    
+    # --- Relationships ---
+    consignment: Mapped['Consignment'] = relationship(back_populates='items')
+    product: Mapped['Product'] = relationship()
+    batch: Mapped['Batch'] = relationship()
+
+    def __repr__(self) -> str:
+        return f'<ConsignmentItem id={self.id} consignment_id={self.consignment_id}>'
+
+class ConsignmentSale(BaseModel):
+    """Mencatat penjualan yang dilaporkan dari stok konsinyasi."""
+    __tablename__ = 'consignment_sales'
+    
+    sale_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    
+    # Foreign Keys
+    consignment_id: Mapped[int] = mapped_column(ForeignKey('consignments.id'), nullable=False)
+    consignment_item_id: Mapped[int] = mapped_column(ForeignKey('consignment_items.id'), nullable=False)
+    
+    # Details
+    sale_date: Mapped[date] = mapped_column(Date, nullable=False)
+    quantity_sold: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    total_value: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
+    
+    # Commission
+    commission_rate: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
+    commission_amount: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    net_amount: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    
+    # End customer info
+    end_customer_name: Mapped[Optional[str]] = mapped_column(String(100))
+    end_customer_info: Mapped[Optional[str]] = mapped_column(Text)
+    
+    # Document references
+    invoice_number: Mapped[Optional[str]] = mapped_column(String(50))
+    receipt_document_url: Mapped[Optional[str]] = mapped_column(String(255))
+    
+    # Status
+    status: Mapped[str] = mapped_column(String(20), default='CONFIRMED')
     
     # Tracking
-    reported_by = Column(String(50))  # Customer yang report penjualan
-    reported_date = Column(DateTime, default=func.current_timestamp())
-    verified_by = Column(String(50))
-    verified_date = Column(DateTime)
+    reported_by: Mapped[Optional[str]] = mapped_column(String(50))
+    reported_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    verified_by: Mapped[Optional[str]] = mapped_column(String(50))
+    verified_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
-    def __repr__(self):
+    # --- Relationships ---
+    consignment: Mapped['Consignment'] = relationship(back_populates='sales')
+    consignment_item: Mapped['ConsignmentItem'] = relationship()
+
+    def __repr__(self) -> str:
         return f'<ConsignmentSale {self.sale_number}>'
 
 class ConsignmentReturn(BaseModel):
-    """Model untuk tracking return dari consignment"""
+    """Mencatat pengembalian stok dari lokasi konsinyasi."""
     __tablename__ = 'consignment_returns'
     
-    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
-    return_number = Column(String(50), unique=True, nullable=False)
+    return_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     
-    # References
-    consignment_id = Column(Integer, ForeignKey('consignments.id'), nullable=False)
-    consignment = relationship('Consignment', back_populates='returns')
+    # Foreign Keys
+    consignment_id: Mapped[int] = mapped_column(ForeignKey('consignments.id'), nullable=False)
+    consignment_item_id: Mapped[int] = mapped_column(ForeignKey('consignment_items.id'), nullable=False)
     
-    consignment_item_id = Column(Integer, ForeignKey('consignment_items.id'), nullable=False)
-    consignment_item = relationship('ConsignmentItem')
+    # Details
+    return_date: Mapped[date] = mapped_column(Date, nullable=False)
+    quantity_returned: Mapped[int] = mapped_column(Integer, nullable=False)
     
-    # Return details
-    return_date = Column(Date, nullable=False)
-    quantity_returned = Column(Integer, nullable=False)
+    # Reason and condition
+    return_reason: Mapped[Optional[str]] = mapped_column(String(100))
+    condition: Mapped[Optional[str]] = mapped_column(String(50))
     
-    # Return reason and condition
-    return_reason = Column(String(100))  # EXPIRED, DAMAGED, UNSOLD, RECALL, etc.
-    condition = Column(String(50))  # GOOD, DAMAGED, EXPIRED
-    
-    # Quality check results
-    qc_status = Column(String(20))  # PENDING, PASSED, FAILED
-    qc_notes = Column(Text)
-    qc_by = Column(String(50))
-    qc_date = Column(DateTime)
+    # QC results
+    qc_status: Mapped[Optional[str]] = mapped_column(String(20))
+    qc_notes: Mapped[Optional[str]] = mapped_column(Text)
+    qc_by: Mapped[Optional[str]] = mapped_column(String(50))
+    qc_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
     # Disposition
-    disposition = Column(String(50))  # RESTOCK, QUARANTINE, DISPOSE, REWORK
-    restocked_quantity = Column(Integer, default=0)
-    disposed_quantity = Column(Integer, default=0)
+    disposition: Mapped[Optional[str]] = mapped_column(String(50))
+    restocked_quantity: Mapped[int] = mapped_column(Integer, default=0)
+    disposed_quantity: Mapped[int] = mapped_column(Integer, default=0)
     
     # Document
-    return_document_url = Column(String(255))
-    photos_url = Column(Text)  # JSON array of photo URLs
+    return_document_url: Mapped[Optional[str]] = mapped_column(String(255))
+    photos_url: Mapped[Optional[str]] = mapped_column(Text)
     
     # Status
-    status = Column(String(20), default='PENDING')  # PENDING, RECEIVED, QC_DONE, PROCESSED
+    status: Mapped[str] = mapped_column(String(20), default='PENDING')
     
     # Tracking
-    initiated_by = Column(String(50))
-    received_by = Column(String(50))
-    received_date = Column(DateTime)
+    initiated_by: Mapped[Optional[str]] = mapped_column(String(50))
+    received_by: Mapped[Optional[str]] = mapped_column(String(50))
+    received_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
-    # Notes
-    notes = Column(Text)
+    notes: Mapped[Optional[str]] = mapped_column(Text)
     
-    def __repr__(self):
+    # --- Relationships ---
+    consignment: Mapped['Consignment'] = relationship(back_populates='returns')
+    consignment_item: Mapped['ConsignmentItem'] = relationship()
+
+    def __repr__(self) -> str:
         return f'<ConsignmentReturn {self.return_number}>'
 
 class ConsignmentStatement(BaseModel):
-    """Model untuk statement/laporan konsinyasi periodic"""
+    """Model untuk laporan/statement konsinyasi periodik."""
     __tablename__ = 'consignment_statements'
     
-    public_id = Column(String(36), default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
-    statement_number = Column(String(50), unique=True, nullable=False)
+    statement_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     
-    # References
-    agreement_id = Column(Integer, ForeignKey('consignment_agreements.id'), nullable=False)
-    agreement = relationship('ConsignmentAgreement')
-    
-    customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
-    customer = relationship('Customer')
+    # Foreign Keys
+    agreement_id: Mapped[int] = mapped_column(ForeignKey('consignment_agreements.id'), nullable=False)
+    customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
     
     # Period
-    period_start = Column(Date, nullable=False)
-    period_end = Column(Date, nullable=False)
+    period_start: Mapped[date] = mapped_column(Date, nullable=False)
+    period_end: Mapped[date] = mapped_column(Date, nullable=False)
     
     # Summary totals
-    total_shipped_value = Column(Numeric(15, 2))
-    total_sold_value = Column(Numeric(15, 2))
-    total_returned_value = Column(Numeric(15, 2))
-    total_commission = Column(Numeric(12, 2))
-    net_amount_due = Column(Numeric(15, 2))
+    total_shipped_value: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
+    total_sold_value: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
+    total_returned_value: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
+    total_commission: Mapped[Optional[float]] = mapped_column(Numeric(12, 2))
+    net_amount_due: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
     
     # Payment tracking
-    payment_status = Column(String(20), default='PENDING')  # PENDING, PARTIAL, PAID, OVERDUE
-    payment_due_date = Column(Date)
-    payment_received_date = Column(Date)
-    payment_amount = Column(Numeric(15, 2))
+    payment_status: Mapped[str] = mapped_column(String(20), default='PENDING')
+    payment_due_date: Mapped[Optional[date]] = mapped_column(Date)
+    payment_received_date: Mapped[Optional[date]] = mapped_column(Date)
+    payment_amount: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
     
     # Document
-    statement_document_url = Column(String(255))
+    statement_document_url: Mapped[Optional[str]] = mapped_column(String(255))
     
     # Status
-    status = Column(String(20), default='DRAFT')  # DRAFT, SENT, CONFIRMED, PAID
+    status: Mapped[str] = mapped_column(String(20), default='DRAFT')
     
     # Tracking
-    generated_by = Column(String(50))
-    generated_date = Column(DateTime, default=func.current_timestamp())
-    sent_date = Column(DateTime)
+    generated_by: Mapped[Optional[str]] = mapped_column(String(50))
+    sent_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     
-    def __repr__(self):
+    # --- Relationships ---
+    agreement: Mapped['ConsignmentAgreement'] = relationship(back_populates='statements')
+    customer: Mapped['Customer'] = relationship(back_populates='consignment_statements')
+
+    def __repr__(self) -> str:
         return f'<ConsignmentStatement {self.statement_number}>'
+
+# ✅ PENTING: Tambahkan relasi balik (back_populates) di model Customer
+# Buka file app/models/users/customer.py dan tambahkan relasi ini di dalam kelas Customer:
+#
+# class Customer(BaseModel):
+#     # ... relasi lain ...
+#     consignment_agreements: Mapped[List['ConsignmentAgreement']] = relationship(back_populates='customer')
+#     consignment_statements: Mapped[List['ConsignmentStatement']] = relationship(back_populates='customer')
+
+# ✅ PENTING: Tambahkan relasi balik (back_populates) di model Allocation
+# Buka file app/models/product/allocation.py dan tambahkan relasi ini di dalam kelas Allocation:
+#
+# class Allocation(BaseModel):
+#     # ... relasi lain ...
+#     consignments: Mapped[List['Consignment']] = relationship(back_populates='allocation')

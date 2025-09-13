@@ -74,7 +74,7 @@ class Allocation(AllocationBase):
     # Relasi yang di-load
     allocation_type: Optional[AllocationType] = None
     customer: Optional['Customer'] = None
-    batch: Optional['Batch'] = None # Hindari relasi kembali ke parent jika tidak perlu
+    #batch: Optional['Batch'] = None # Hindari relasi kembali ke parent jika tidak perlu
     placements: List['StockPlacement'] = []
 
     model_config = ConfigDict(from_attributes=True)

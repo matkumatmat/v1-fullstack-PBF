@@ -1,14 +1,11 @@
-# file: app/services/inbound_service.py
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Impor model dan skema
 from app.models import Product, Batch, Allocation, StockPlacement, AllocationStatusEnum
 from app.schemas.process.inbound import InboundPayload
 from app.schemas.product import BatchCreate, AllocationCreate
 from app.schemas.warehouse import StockPlacementCreate
 
-# Impor service lain
 from app.services import product_service, warehouse_service
 from app.core.exceptions import NotFoundException, UnprocessableEntityException
 
@@ -16,7 +13,6 @@ async def process_full_inbound(db: AsyncSession, payload: InboundPayload) -> Sto
     """
     Mengorkestrasi seluruh proses inbound, membuat alokasi dengan status QUARANTINE.
     """
-    # --- Langkah 1: Tentukan atau Buat Produk ---
     if payload.product_id:
         product = await db.get(Product, payload.product_id)
         if not product:

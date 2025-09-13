@@ -11,6 +11,14 @@ from .tender import(
     TenderReallocationPayload
 )
 
+from .consignment import (
+    ConsignmentItemPayload,
+    ConsignmentReallocationPayload,
+    Consignment,
+    ConsignmentItem,
+)
+
+
 __all__ = [
     "InboundFormData",
     "InboundProductSearchSchema",
@@ -18,5 +26,13 @@ __all__ = [
     "InboundPayload",
     "InboundResponse",
 
-    "TenderReallocationPayload"
+    "TenderReallocationPayload",
+
+    "ConsignmentItemPayload",
+    "ConsignmentReallocationPayload"
+    "Consignment", 
+    "ConsignmentItem",
+    "TenderReallocationPayload",
+    "InboundPayload",
+    "InboundResponse",    
 ]

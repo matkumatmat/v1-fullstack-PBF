@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/reallocate-stock", response_model=AllocationSchema)
 async def reallocate_for_tender(
     payload: TenderReallocationPayload,
-    db: AsyncSession = Depends(deps.get_db)
+    db: AsyncSession = Depends(deps.get_db_session)
 ):
     """Endpoint untuk mere-alokasi stok dari reguler ke tender."""
     tender_allocation = await tender.reallocate_stock_for_tender(db, payload=payload)

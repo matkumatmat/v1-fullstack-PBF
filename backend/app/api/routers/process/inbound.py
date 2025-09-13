@@ -30,7 +30,7 @@ async def get_form_data_endpoint(db: AsyncSession = Depends(get_db_session)):
     yang dibutuhkan oleh frontend untuk membangun form inbound.
     Panggil endpoint ini **satu kali** saat halaman inbound dimuat.
     """
-    return await inbound.get_inbound_form_data(db)
+    return await inbound.process_full_inbound(db)
 
 @router.get("/search-products", response_model=List[InboundProductSearchSchema], summary="Cari Produk untuk Inbound")
 async def search_products_endpoint(

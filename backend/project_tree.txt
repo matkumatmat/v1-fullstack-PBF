@@ -9,8 +9,9 @@ app/
 │   │   │   ├── inbound.py
 │   │   │   └── tender.py
 │   │   ├── product
-│   │   │   └── allocation.py
-│   │   ├── product_routes.py
+│   │   │   ├── __init__.py
+│   │   │   ├── allocation.py
+│   │   │   └── product.py
 │   │   ├── type
 │   │   │   ├── allocation_type.py
 │   │   │   ├── customer_type.py
@@ -85,12 +86,11 @@ app/
 │   │   ├── __init__.py
 │   │   ├── customer.py
 │   │   └── user.py
-│   ├── warehouse
-│   │   ├── __init__.py
-│   │   ├── rack.py
-│   │   ├── stock_placement.py
-│   │   └── warehouse.py
-│   └── warehouse.py
+│   └── warehouse
+│       ├── __init__.py
+│       ├── rack.py
+│       ├── stock_placement.py
+│       └── warehouse.py
 ├── responses.py
 ├── schemas
 │   ├── __init__.py

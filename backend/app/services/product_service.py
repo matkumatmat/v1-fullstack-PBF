@@ -29,12 +29,14 @@ async def get_product_by_id(db: AsyncSession, product_id: int) -> Optional[Produ
             selectinload(Product.package_type),
             selectinload(Product.temperature_type),
             selectinload(Product.prices),
-            selectinload(Product.batches),
-            selectinload(Product.sales_order_items)
+            selectinload(Product.sales_order_items),
+            
+            # ✅ CHAINED LOADING: Muat Batch, LALU muat Allocation di dalam setiap Batch
+            selectinload(Product.batches).selectinload(Batch.allocations)
         )
     )
     result = await db.execute(query)
-    return result.scalar_one_or_none()
+    return result.unique().scalar_one_or_none()
 
 async def get_all_products(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Product]:
     query = (
@@ -47,13 +49,17 @@ async def get_all_products(db: AsyncSession, skip: int = 0, limit: int = 100) ->
             selectinload(Product.package_type),
             selectinload(Product.temperature_type),
             selectinload(Product.prices),
-            selectinload(Product.batches),
-            selectinload(Product.sales_order_items)
+            selectinload(Product.sales_order_items),
+
+            # ✅ CHAINED LOADING: Muat Batch, LALU muat Allocation di dalam setiap Batch
+            # Anda bisa merantainya lebih jauh jika Allocation punya relasi lain yang perlu dimuat
+            selectinload(Product.batches).selectinload(Batch.allocations).selectinload(Allocation.allocation_type),
+            selectinload(Product.batches).selectinload(Batch.allocations).selectinload(Allocation.customer)
         )
     )
     result = await db.execute(query)
-    return result.scalars().all()
-
+    # .unique() sangat penting saat menggunakan joined/selectin loading
+    return result.unique().scalars().all()
 async def create_product(db: AsyncSession, product_in: ProductCreate) -> Product:
     db_product = Product(**product_in.model_dump())
     db.add(db_product)

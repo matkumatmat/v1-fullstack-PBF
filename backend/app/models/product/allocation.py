@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from ..users import Customer
     from ..warehouse import StockPlacement
     from .batch import Batch
+    from ..process import Consignment
+    from ..process import TenderContract
 
 class Allocation(BaseModel):
     __tablename__ = 'allocations'
@@ -55,10 +57,10 @@ class Allocation(BaseModel):
     # Merefaktor relasi yang dikomentari ke sintaks modern.
     # picking_order_items: Mapped[List['PickingOrderItem']] = relationship(back_populates='allocation')
     # picking_list_items: Mapped[List['PickingListItem']] = relationship(back_populates='allocation')
-    # consignments: Mapped[List['Consignment']] = relationship(back_populates='allocation')
+    consignments: Mapped[List['Consignment']] = relationship(back_populates='allocation')
     # stock_movements: Mapped[List['StockMovement']] = relationship(back_populates='allocation')
-    # tender_contract_id: Mapped[Optional[int]] = mapped_column(ForeignKey('tender_contracts.id'))
-    # tender_contract: Mapped[Optional['TenderContract']] = relationship(back_populates='allocations')
+    #tender_contract_id: Mapped[Optional[int]] = mapped_column(ForeignKey('tender_contracts.id'))
+    #tender_contract: Mapped[Optional['TenderContract']] = relationship(back_populates='allocations')
     
     ### DEVIL'S ADVOCATE NOTE ###
     # Menghapus semua properti. Kalkulasi stok (`last_stock`, `available_stock`)

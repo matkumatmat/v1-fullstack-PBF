@@ -16,11 +16,11 @@ import sys
 #    `os.path.dirname(__file__)` -> direktori 'alembic' saat ini.
 #    `'..'` -> naik satu level ke direktori root proyek.
 #    Ini memastikan `from app.models...` dapat ditemukan.
-sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # 2. Impor BaseModel Anda.
 #    Ini adalah objek pusat yang berisi `metadata` dari SEMUA model Anda.
-from app.models.base import BaseModel
+from app.models.configuration.base import BaseModel
 
 # 3. Impor semua modul model Anda.
 #    Ini penting agar SQLAlchemy "mendaftarkan" semua tabel Anda ke dalam

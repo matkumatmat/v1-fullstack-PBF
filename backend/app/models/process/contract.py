@@ -60,7 +60,7 @@ class TenderContract(BaseModel):
     # NOTE: Relasi 'allocations' dipertimbangkan untuk dihapus karena alur yang lebih
     # akurat adalah melalui ContractReservation. Jika dipertahankan, pastikan ada
     # `tender_contract_id` di model Allocation.
-    # allocations: Mapped[List['Allocation']] = relationship(back_populates='tender_contract')
+    #allocations: Mapped[List['Allocation']] = relationship(back_populates='tender_contract')
 
     def __repr__(self) -> str:
         return f'<TenderContract {self.contract_number}>'

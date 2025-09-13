@@ -1,5 +1,6 @@
-# file: app/api/routers/process/__init__.py
+from . import inbound
+from . import consignment
+from . import tender
 
-from . import inbound as inbound
-
-__all__ = ["inbound"]
+# Ekspos semua modul router agar bisa diimpor dari luar
+__all__ = ["inbound", "consignment", "tender"]

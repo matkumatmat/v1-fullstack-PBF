@@ -60,7 +60,7 @@ class Batch(BatchBase):
     updated_at: datetime
 
     # Relasi yang di-load
-    product: Optional['ProductInBatch'] = None
+    #product: Optional['ProductInBatch'] = None
     allocations: List['Allocation'] = []
 
     model_config = ConfigDict(from_attributes=True)

@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from ..configuration import CustomerType, SectorType
     from ..order_process import SalesOrder
     from ..product import Allocation
+    from ..process import ConsignmentAgreement, ConsignmentStatement
 
 class Customer(BaseModel):
     __tablename__ = 'customers'
@@ -34,8 +35,8 @@ class Customer(BaseModel):
     ### DEVIL'S ADVOCATE NOTE ###
     # Merefaktor relasi yang dikomentari ke sintaks modern.
     # Saat Anda siap menggunakannya, Anda hanya perlu menghapus komentar.
-    # consignment_agreements: Mapped[List['ConsignmentAgreement']] = relationship(back_populates='customer')
-    # consignment_statements: Mapped[List['ConsignmentStatement']] = relationship(back_populates='customer')    
+    consignment_agreements: Mapped[List['ConsignmentAgreement']] = relationship(back_populates='customer')
+    consignment_statements: Mapped[List['ConsignmentStatement']] = relationship(back_populates='customer')    
     
     addresses: Mapped[List['CustomerAddress']] = relationship(back_populates='customer', cascade='all, delete-orphan')
     

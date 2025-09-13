@@ -4,8 +4,16 @@ from .consignment import (
     ConsignmentSale, ConsignmentStatement
 ) 
 
+from .contract import(
+    TenderContract,
+    ContractReservation
+
+)
+
 __all__ = [
     "Consignment","ConsignmentAgreement",
     "ConsignmentItem","ConsignmentReturn",
     "ConsignmentSale","ConsignmentStatement"
+
+    "TenderContract","ContractReservation"
 ]

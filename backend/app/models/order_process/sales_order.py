@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from ..configuration import (
         SectorType, AllocationType, ProductPrice)
     from .shipping_plan import ShippingPlan, ShippingPlanItem
+    from ..process import TenderContract
     
 
 class SalesOrder(BaseModel):
@@ -48,8 +49,8 @@ class SalesOrder(BaseModel):
     ### DEVIL'S ADVOCATE NOTE ###
     # Merefaktor field yang dikomentari ke sintaks modern.
     # Saat Anda siap menggunakannya, Anda hanya perlu menghapus komentar.
-    # tender_contract_id: Mapped[Optional[int]] = mapped_column(ForeignKey('tender_contracts.id'))
-    # tender_contract: Mapped[Optional['TenderContract']] = relationship(back_populates='sales_order')
+    tender_contract_id: Mapped[Optional[int]] = mapped_column(ForeignKey('tender_contracts.id'))
+    tender_contract: Mapped[Optional['TenderContract']] = relationship(back_populates='sales_orders')
     # packing_orders: Mapped[List['PackingOrder']] = relationship(back_populates='sales_order')
     
     ### DEVIL'S ADVOCATE NOTE ###
