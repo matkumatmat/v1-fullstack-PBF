@@ -1,61 +1,43 @@
-from datetime import datetime
 from sqlalchemy import (
-    Integer, String, ForeignKey, Text, Enum as SQLAlchemyEnum, UniqueConstraint, DateTime, func, select, case
+    Integer, String, ForeignKey, Enum as SQLAlchemyEnum,
+    func, select, UniqueConstraint, DateTime
 )
+from datetime import datetime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.hybrid import hybrid_property
-from typing import List, Optional
-
-from ..configuration import BaseModel, WarehouseStatusEnum, RackStatusEnum
+from typing import Optional
+from ..configuration import BaseModel,RackStatusEnum
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from ..configuration import TemperatureType, LocationType
-    from ..product import Allocation
     from .warehouse import Warehouse
-    from .stock_placement import StockPlacement
+    from ..product import Allocation
 
 class Rack(BaseModel):
     __tablename__ = 'racks'
-
     code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-    capacity: Mapped[Optional[int]] = mapped_column(Integer)
     status: Mapped[RackStatusEnum] = mapped_column(SQLAlchemyEnum(RackStatusEnum, name="rack_status_enum", create_type=False), default=RackStatusEnum.ACTIVE)
-    zone: Mapped[Optional[str]] = mapped_column(String(10))
+    column: Mapped[Optional[str]] = mapped_column(String(10))
     row: Mapped[Optional[str]] = mapped_column(String(10))
     level: Mapped[Optional[str]] = mapped_column(String(10))
     warehouse_id: Mapped[int] = mapped_column(ForeignKey('warehouses.id'), nullable=False)
-    location_type_id: Mapped[Optional[int]] = mapped_column(ForeignKey('location_types.id'))
-
-    # --- Relationships ---
     warehouse: Mapped['Warehouse'] = relationship(back_populates='racks')
-    location_type: Mapped[Optional['LocationType']] = relationship()
-    placement: Mapped[Optional['StockPlacement']] = relationship(back_populates='rack', cascade="all, delete-orphan", uselist=False)
-
-    @hybrid_property
-    def current_quantity(self) -> int:
-        # Kode Python ini tetap ada untuk akses pada instance yang sudah di-load
-        if self.placement:
-            return self.placement.quantity
-        return 0
-
-    # ✅ ===================================================================
-    # ✅ TAMBAHKAN EKSPRESI SQL INI
-    # ✅ ===================================================================
-    @current_quantity.expression
-    def current_quantity(cls):
-        """
-        Menyediakan ekspresi SQL untuk menghitung current_quantity.
-        Ini mencegah lazy loading dan error greenlet.
-        """
-        # Kita menggunakan subquery untuk mendapatkan kuantitas dari tabel stock_placements
-        # yang terhubung ke Rack ini.
-        # Jika tidak ada placement, coalesce akan mengubah NULL menjadi 0.
-        return func.coalesce(
-            select(StockPlacement.quantity)
-            .where(StockPlacement.rack_id == cls.id)
-            .scalar_subquery(),
-            0
-        )
-
+    item: Mapped[Optional['RackItem']] = relationship(back_populates='rack', cascade="all, delete-orphan", uselist=False)
     def __repr__(self) -> str:
-        return f"<Rack id={self.id}'>"
+        return f"<Rack id={self.id} rack code={self.code}'>"
+    
+class RackItem(BaseModel):
+    __tablename__ = 'rack_items'
+    rack_id: Mapped[int] = mapped_column(ForeignKey('racks.id'), nullable=False)
+    allocation_id: Mapped[int] = mapped_column(ForeignKey('allocations.id'), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, active_history=True, server_default= 0, info={'check':'quantitiy >=0 '})
+    placed_by: Mapped[Optional[str]] = mapped_column(String(50),active_history=True)
+    placement_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    rack: Mapped['Rack'] = relationship(back_populates='item')
+    allocation: Mapped['Allocation'] = relationship(back_populates='racks_allocations')
+    __table_args__ = (UniqueConstraint('rack_id', 'allocation_id', name='uq_rack_allocation'),
+                    #Index('idx_rack_item_quantity', 'quantity'),  # Untuk reporting
+                    #Index('idx_placement_date', 'placement_date') # Untuk audit queries
+    )  
+    def __repr__(self) -> str:
+        return f"<Rack id={self.id} produk={self.allocation.batch} quantity={self.quantity}'>"

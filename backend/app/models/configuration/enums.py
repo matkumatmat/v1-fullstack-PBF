@@ -20,6 +20,7 @@ class RackStatusEnum(str, enum.Enum):
 class AllocationStatusEnum(str, enum.Enum):
     ACTIVE = "ACTIVE"
     CLOSED = "CLOSED"
+    QUARANTINE = "QUARANTINE"
 
 class BatchStatusEnum(str, enum.enum):
     QUARANTINE ="QUARANTINE"
@@ -33,7 +34,8 @@ class SalesOrderStatusEnum(str, enum.Enum):
     CONFIRMED = "CONFIRMED"
     SHIPPED = "SHIPPED"
     PARTIALLY_SHIPPED = "PARTIALLY_SHIPPED"
-    CANCELLED = "CANCELLED"
+    CANCELLED = "CANCELLED" 
+    COMPLETE = "COMPLETE"
     
 class ShippingPlanStatusEnum(str, enum.Enum):
     PENDING = "PENDING"

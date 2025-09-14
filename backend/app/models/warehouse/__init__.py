@@ -1,7 +1,6 @@
 from .warehouse import Warehouse
-from .rack import Rack
-from .stock_placement import StockPlacement
+from .rack import Rack, RackItem
 
 __all__=[
-    "Racks","Warehouse","StockPlacement"
+    "Rack","Warehouse","RackItem"
 ]

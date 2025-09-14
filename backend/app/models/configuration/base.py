@@ -2,10 +2,9 @@
 
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, DateTime, Integer, func
+from sqlalchemy import DateTime, Integer, func
 from sqlalchemy.orm import declarative_mixin, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-
 from app.database import Base 
 
 @declarative_mixin

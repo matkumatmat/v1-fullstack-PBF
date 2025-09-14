@@ -1,18 +1,12 @@
-from datetime import datetime
-from sqlalchemy import (
-    Integer, String, ForeignKey, Text, Enum as SQLAlchemyEnum, UniqueConstraint, DateTime, func
-)
+from sqlalchemy import (String, ForeignKey, Text, Enum as SQLAlchemyEnum)
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy.ext.hybrid import hybrid_property
 from typing import List, Optional
-
-from ..configuration import BaseModel, WarehouseStatusEnum, RackStatusEnum
+from ..configuration import BaseModel, WarehouseStatusEnum
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..configuration import TemperatureType, LocationType
-    from ..product import Allocation
+    from ..configuration import TemperatureType
     from .rack import Rack
-
+    
 class Warehouse(BaseModel):
     __tablename__ = 'warehouses'
     name: Mapped[str] = mapped_column(String(100), nullable=False)
