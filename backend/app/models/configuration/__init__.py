@@ -12,7 +12,8 @@ from .enums import (
     AllocationStatusEnum,
     SalesOrderStatusEnum,
     ShippingPlanStatusEnum,
-    MovementDirectionEnum
+    MovementDirectionEnum,
+    BatchStatusEnum
 )
 
 from .type import (
@@ -24,10 +25,7 @@ from .type import (
     CustomerType,
     DocumentType,
     StatusType,
-    LocationType,
     PackagingMaterial,
-    PackagingBoxType,
-    PriorityLevel,
     NotificationType,
     DeliveryType,
     ProductPrice,
@@ -38,20 +36,14 @@ from .type import (
 
 __all__ = [
     "TimestampMixin","PublicIDMixin","BaseModel",
-
     "AddressTypeEnum","WarehouseStatusEnum","RackStatusEnum",
     "AllocationStatusEnum","SalesOrderStatusEnum",
-    "ShippingPlanStatusEnum","MovementDirectionEnum"
-
+    "ShippingPlanStatusEnum","MovementDirectionEnum","BatchStatusEnum"
     "ProductType","PackageType","TemperatureType",
     "AllocationType","SectorType","CustomerType","DocumentType",
-    "StatusType","LocationType","PackagingMaterial",
-    "PackagingBoxType","PriorityLevel","NotificationType",
+    "StatusType","PackagingMaterial",
+    "PriorityLevel","NotificationType",
     "DeliveryType", "ProductPrice","MovementType",
     "sales_order_item_sector_association",
     "sales_order_item_allocation_association"
-
-
-
-
 ]
