@@ -1,15 +1,15 @@
 from datetime import date
 from sqlalchemy import (
-    Integer, String, ForeignKey, Date, Numeric, Text,
+    Integer, String, ForeignKey, Date, Numeric, text,
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
-from ..configuration import BaseModel
+from ..configuration import BaseModel, allocation_batches_association
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .product import Product
-    from .allocation import Allocation, allocation_batches_association
+    from .allocation import Allocation
 
 class Batch(BaseModel):
     __tablename__ = 'batches'
@@ -28,7 +28,8 @@ class Batch(BaseModel):
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'), nullable=False)
     product: Mapped['Product'] = relationship(back_populates='batches')
     allocations: Mapped[List['Allocation']] = relationship(
-        secondary=allocation_batches_association, back_populates='batches'
-    )    
+        secondary=allocation_batches_association,
+        back_populates='batches'
+    )  
     def __repr__(self) -> str:
         return f"<Batch(id={self.id})>"

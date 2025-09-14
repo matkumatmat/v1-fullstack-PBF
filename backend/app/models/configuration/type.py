@@ -126,7 +126,7 @@ class PackagingMaterial(BaseModel):
     code: Mapped[str] = mapped_column(String(10), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
-    material_type: Mapped[PackagingEnum] = mapped_column(SQLAlchemyEnum(PackagingEnum, name="Packaging Enum", create_type=False))
+    material_type: Mapped[PackagingEnum] = mapped_column(SQLAlchemyEnum(PackagingEnum, name="packaging_enum", create_type=False))
     is_reusable: Mapped[bool] = mapped_column(Boolean, default=False)
     is_fragile_protection: Mapped[bool] = mapped_column(Boolean, default=False)
     is_temperature_protection: Mapped[bool] = mapped_column(Boolean, default=False)

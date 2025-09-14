@@ -30,6 +30,10 @@ from .type import (
     MovementType,
 )
 
+from .associations import(
+    allocation_batches_association
+)
+
 __all__ = [
     "TimestampMixin","PublicIDMixin","BaseModel",
     "AddressTypeEnum","WarehouseStatusEnum","RackStatusEnum",
@@ -38,6 +42,8 @@ __all__ = [
     "ProductType","PackageType","TemperatureType",
     "AllocationType","SectorType","CustomerType","DocumentType",
     "StatusType","PackagingMaterial",
-    "PriorityLevel","NotificationType",
-    "DeliveryType", "ProductPrice","MovementType"
+    "NotificationType",
+    "DeliveryType", "ProductPrice","MovementType",
+
+    "allocation_batches_association"
 ]

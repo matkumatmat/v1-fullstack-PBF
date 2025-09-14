@@ -27,7 +27,7 @@ class Customer(BaseModel):
         return next((addr for addr in self.addresses if addr.is_default), None)
     @property
     def delivery_addresses(self) -> List['CustomerAddress']:
-        return [addr for addr in self.addresses if addr.address_type == AddressTypeEnum.DELIVERY and addr.is_active]    
+        return [addr for addr in self.addresses if addr.address_type == AddressTypeEnum.CUSTOMER and addr.is_active]    
     def __repr__(self) -> str:
         return f'<Customer id={self.id} tipe customer{self.customer_type.name}>'
 
@@ -35,7 +35,7 @@ class CustomerAddress(BaseModel):
     __tablename__ = 'customer_addresses'
     customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
     address_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    address_type: Mapped[AddressTypeEnum] = mapped_column(SQLAlchemyEnum(AddressTypeEnum, name="address_type_enum", create_type=False), default=AddressTypeEnum.DELIVERY)
+    address_type: Mapped[AddressTypeEnum] = mapped_column(SQLAlchemyEnum(AddressTypeEnum, name="address_type_enum", create_type=False), default=AddressTypeEnum.CUSTOMER )
     address_line1: Mapped[str] = mapped_column(String(200), nullable=False)
     address_line2: Mapped[Optional[str]] = mapped_column(String(200))
     city: Mapped[str] = mapped_column(String(50), nullable=False)

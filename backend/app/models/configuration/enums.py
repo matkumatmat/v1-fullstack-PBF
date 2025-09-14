@@ -22,7 +22,7 @@ class AllocationStatusEnum(str, enum.Enum):
     CLOSED = "CLOSED"
     QUARANTINE = "QUARANTINE"
 
-class BatchStatusEnum(str, enum.enum):
+class BatchStatusEnum(str, enum.Enum):
     QUARANTINE ="QUARANTINE"
     ACTIVE ="ACTIVE"
     ALLOCATED ="ALLOCATED"
@@ -49,7 +49,7 @@ class MovementDirectionEnum(str, enum.Enum):
     OUT = "OUT"
     TRANSFER = "TRANSFER"
 
-class PackagingEnum(str, enum.enum):
+class PackagingEnum(str, enum.Enum):
     PACKAGING_MATERIAL="PACKAGING_MATERIAL"
     PACKAGING_BOX="PACKAGING_BOX"
 

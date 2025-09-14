@@ -1,12 +1,13 @@
 from datetime import date
 from sqlalchemy import (
-    Integer, String, ForeignKey, Date, Numeric, Text,
-    Enum as SQLAlchemyEnum, Table, Column
+    Integer, String, ForeignKey, text,
+    Enum as SQLAlchemyEnum
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
 
-from ..configuration import BaseModel,AllocationStatusEnum
+from ..configuration import BaseModel,AllocationStatusEnum,allocation_batches_association
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..configuration import AllocationType
@@ -14,20 +15,13 @@ if TYPE_CHECKING:
     from ..warehouse import RackItem
     from .batch import Batch
 
-allocation_batches_association = Table(
-    'allocation_batches', BaseModel.metadata,
-    Column('allocation_id', Integer, ForeignKey('allocations.id'), primary_key=True),
-    Column('batch_id', Integer, ForeignKey('batches.id'), primary_key=True)
-)
-
 class Allocation(BaseModel):
     __tablename__ = 'allocations'
-    allocated_quantity: Mapped[int] = mapped_column(Integer, default=0, server_default=0, active_history=True, info={'check': 'allocated_quantity >= 0'}) 
-    shipped_quantity: Mapped[int] = mapped_column(Integer, default=0, server_default=0, active_history=True, info={'check': 'shipped_quantity >= 0'})   
-    reserved_quantity: Mapped[int] = mapped_column(Integer, default=0, server_default=0, active_history=True, info={'check': 'reserved_quantity >= 0'})
+    allocated_quantity: Mapped[int] = mapped_column(Integer, default=0, server_default=text('0'), active_history=True, info={'check': 'allocated_quantity >= 0'}) 
+    shipped_quantity: Mapped[int] = mapped_column(Integer, default=0, server_default=text('0'), active_history=True, info={'check': 'shipped_quantity >= 0'})   
+    reserved_quantity: Mapped[int] = mapped_column(Integer, default=0, server_default=text('0'), active_history=True, info={'check': 'reserved_quantity >= 0'})
     status: Mapped[AllocationStatusEnum] = mapped_column(SQLAlchemyEnum(AllocationStatusEnum, name="allocation_status_enum", create_type=False), default=AllocationStatusEnum.ACTIVE)
     allocation_number: Mapped[Optional[str]] = mapped_column(String(50), unique=True, nullable=True, index=True)
-    batch_id: Mapped[int] = mapped_column(ForeignKey('batches.id'), nullable=False)
     allocation_type_id: Mapped[int] = mapped_column(ForeignKey('allocation_types.id'), nullable=False)
     customer_id: Mapped[Optional[int]] = mapped_column(ForeignKey('customers.id'))
     original_reserved_quantity: Mapped[int] = mapped_column(Integer, default=0)

@@ -18,7 +18,7 @@ class CustomerAddressBase(BaseModel):
     """Skema dasar dengan field yang dapat diinput oleh pengguna untuk CustomerAddress."""
     customer_id: int
     address_name: Annotated[str, Field(..., max_length=100)]
-    address_type: AddressTypeEnum = Field(default=AddressTypeEnum.DELIVERY)
+    address_type: AddressTypeEnum = Field(default=AddressTypeEnum.CUSTOMER)
     address_line1: Annotated[str, Field(..., max_length=200)]
     address_line2: Optional[Annotated[str, Field(max_length=200)]] = None
     city: Annotated[str, Field(..., max_length=50)]

@@ -1,10 +1,9 @@
 from sqlalchemy import (
     Integer, String, ForeignKey, Enum as SQLAlchemyEnum,
-    func, select, UniqueConstraint, DateTime
+    func,UniqueConstraint, DateTime, text
 )
 from datetime import datetime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy.ext.hybrid import hybrid_property
 from typing import Optional
 from ..configuration import BaseModel,RackStatusEnum
 from typing import TYPE_CHECKING
@@ -35,7 +34,7 @@ class RackItem(BaseModel):
     rack_id: Mapped[int] = mapped_column(ForeignKey('racks.id'), nullable=False, unique=True)
     allocation_id: Mapped[int] = mapped_column(ForeignKey('allocations.id'), nullable=False)
     batch_id: Mapped[int] = mapped_column(ForeignKey('batches.id'), nullable=False)    
-    quantity: Mapped[int] = mapped_column(Integer, nullable=False, active_history=True, server_default= 0, info={'check':'quantitiy >=0 '})
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, active_history=True, server_default=text('0'), info={'check':'quantitiy >=0 '})
     placed_by: Mapped[Optional[str]] = mapped_column(String(50),active_history=True)
     placement_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     rack: Mapped['Rack'] = relationship(back_populates='item')
