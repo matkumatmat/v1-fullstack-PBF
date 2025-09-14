@@ -58,4 +58,4 @@ class Rack(BaseModel):
         )
 
     def __repr__(self) -> str:
-        return f"<Rack id={self.id} code='{self.code}'>"
+        return f"<Rack id={self.id}'>"

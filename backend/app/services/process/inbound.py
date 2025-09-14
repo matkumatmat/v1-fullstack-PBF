@@ -57,7 +57,7 @@ async def search_racks_for_inbound(db: AsyncSession, query: str) -> List[Rack]:
             Rack.code.ilike(search_term),
             Rack.warehouse.has(code=query.upper())
         ))
-        .filter(Rack.placement == None) # Hanya rak yang kosong
+        .filter(Rack.placement.is_(None)) # Hanya rak yang kosong
         .options(selectinload(Rack.warehouse))
         .limit(20)
     )
@@ -66,71 +66,86 @@ async def search_racks_for_inbound(db: AsyncSession, query: str) -> List[Rack]:
 
 # --- Service untuk Proses Utama ---
 
-async def process_full_inbound(db: AsyncSession, payload: InboundPayload) -> StockPlacement:
+# file: app/services/process/inbound.py (SERVICE YANG DISESUAIKAN)
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+import uuid
+
+from app.models import (
+    Product, Batch, Allocation, StockPlacement, Rack, AllocationType,
+    AllocationStatusEnum
+)
+from app.schemas.process.inbound import InboundPayload, InboundResponse
+from app.core.exceptions import NotFoundException, UnprocessableEntityException
+
+async def process_full_inbound(db: AsyncSession, payload: InboundPayload) -> InboundResponse:
     """
-    Mengeksekusi seluruh proses inbound dalam SATU transaksi atomik.
+    Mengeksekusi seluruh proses inbound dalam satu transaksi atomik,
+    menggunakan skema yang disederhanakan.
     """
-    async with db.begin_nested(): # Memulai satu transaksi untuk seluruh proses
-        # 1. Dapatkan atau Buat Produk
+    async with db.begin_nested():
+        # --- 1. Dapatkan atau Buat Produk ---
         product = None
-        if payload.existing_product_id:
-            product = await db.get(Product, payload.existing_product_id)
+        if payload.existing_product_public_id:
+            product_query = select(Product).where(Product.public_id == payload.existing_product_public_id)
+            product = (await db.execute(product_query)).scalar_one_or_none()
             if not product:
-                raise NotFoundException(f"Product with id {payload.existing_product_id} not found.")
+                raise NotFoundException(f"Product with public_id {payload.existing_product_public_id} not found.")
         elif payload.new_product_data:
             product = Product(**payload.new_product_data.model_dump())
             db.add(product)
             await db.flush()
         
-        # 2. Validasi Rak dan Tipe Alokasi
-        rack = await db.get(Rack, payload.placement_data.rack_id)
+        # --- 2. Validasi Rak dan Tipe Alokasi ---
+        rack_query = select(Rack).where(Rack.public_id == payload.rack_public_id)
+        rack = (await db.execute(rack_query)).scalar_one_or_none()
         if not rack:
-            raise NotFoundException(f"Rack with id {payload.placement_data.rack_id} not found.")
-        if rack.placement:
-            raise BadRequestException(f"Rack {rack.code} is already occupied.")
+            raise NotFoundException(f"Rack with public_id {payload.rack_public_id} not found.")
         
-        alloc_type = await db.get(AllocationType, payload.allocation_type_id)
+        alloc_type_query = select(AllocationType).where(AllocationType.public_id == payload.allocation_type_public_id)
+        alloc_type = (await db.execute(alloc_type_query)).scalar_one_or_none()
         if not alloc_type:
-            raise NotFoundException(f"AllocationType with id {payload.allocation_type_id} not found.")
+            raise NotFoundException(f"AllocationType with public_id {payload.allocation_type_public_id} not found.")
 
-        # 3. Buat Batch
-        db_batch = Batch(**payload.batch_data.model_dump(), product_id=product.id)
+        # --- 3. Buat Batch dari data payload yang datar ---
+        db_batch = Batch(
+            product_id=product.id,
+            lot_number=payload.lot_number,
+            expiry_date=payload.expiry_date,
+            NIE=payload.NIE,
+            received_quantity=payload.received_quantity,
+            receipt_document=payload.receipt_document,
+            receipt_date=payload.receipt_date,
+            length=payload.length,
+            width=payload.width,
+            height=payload.height,
+            weight=payload.weight
+        )
         
-        # 4. Buat Alokasi dengan Status Karantina
+        # --- 4. Buat Alokasi ---
         db_allocation = Allocation(
             batch=db_batch,
-            allocation_type=alloc_type,
+            allocation_type_id=alloc_type.id,
             allocated_quantity=db_batch.received_quantity,
             status=AllocationStatusEnum.QUARANTINE,
             allocation_date=db_batch.receipt_date
         )
-        
-        # 5. Buat Penempatan Stok
-        if payload.placement_data.quantity > db_allocation.allocated_quantity:
-            raise UnprocessableEntityException("Placement quantity cannot exceed received quantity.")
             
+        # --- 5. Buat Penempatan Stok ---
         db_placement = StockPlacement(
-            rack=rack,
+            rack_id=rack.id,
             allocation=db_allocation,
-            quantity=payload.placement_data.quantity
+            quantity=payload.placement_quantity
         )
         
         db.add_all([db_batch, db_allocation, db_placement])
-        await db.flush()
+        await db.flush() # Kirim ke DB untuk mendapatkan ID dan public_id
 
-        # 6. Muat Ulang dengan Eager Loading untuk Respons yang Lengkap
-        # Ini adalah cara yang BENAR untuk memuat relasi yang dalam sebelum sesi ditutup.
-        result = await db.get(
-            StockPlacement, 
-            db_placement.id, 
-            options=[
-                selectinload(StockPlacement.rack).selectinload(Rack.warehouse),
-                selectinload(StockPlacement.allocation).selectinload(Allocation.batch).selectinload(Batch.product),
-                selectinload(StockPlacement.allocation).selectinload(Allocation.allocation_type),
-                selectinload(StockPlacement.allocation).selectinload(Allocation.customer)
-            ]
+        # --- 6. Bangun Respons Ringkas Secara Manual ---
+        return InboundResponse(
+            product_public_id=product.public_id,
+            batch_public_id=db_batch.public_id,
+            allocation_public_id=db_allocation.public_id,
+            stock_placement_public_id=db_placement.public_id
         )
-        if not result:
-            raise UnprocessableEntityException("Failed to retrieve placement after creation.")
-            
-        return result

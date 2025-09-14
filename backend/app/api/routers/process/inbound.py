@@ -1,5 +1,6 @@
 # file: app/api/routers/process/inbound.py (FINAL & COMPLETE)
 
+import logging
 from fastapi import APIRouter, Depends, status, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -68,6 +69,7 @@ async def process_inbound_endpoint(
     except Exception as e:
         # Menangkap error tak terduga lainnya
         # Sebaiknya log error ini untuk debugging
+        logging.exception("An unexpected error occurred during inbound processing.")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected internal error occurred: {e}"

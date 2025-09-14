@@ -5,7 +5,10 @@ from .inbound import (
     InboundProductSearchSchema,
     InboundRackSearchSchema,
     InboundPayload,
-    InboundResponse
+    InboundResponse,
+    BatchInResponse,
+    AllocationInResponse,
+    RackInResponse
 )
 from .tender import(
     TenderReallocationPayload
@@ -35,4 +38,5 @@ __all__ = [
     "TenderReallocationPayload",
     "InboundPayload",
     "InboundResponse",    
+    "BatchInResponse", "AllocationInResponse", "RackInResponse"
 ]

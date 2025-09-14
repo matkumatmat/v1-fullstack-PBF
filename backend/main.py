@@ -1,28 +1,31 @@
 # file: main.py (REVISED LOGFIRE CONFIGURATION)
 
 import logfire
+import logging
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 # --- [BAGIAN 1: KONFIGURASI LOGFIRE UNTUK PENGEMBANGAN LOKAL] ---
 # ✅ PERBAIKAN: Konfigurasi eksplisit untuk mode offline/konsol.
 
-from logfire.exporters.console import ConsoleExporter
-from logfire.propagate import set_propagator
-from opentelemetry.propagators.noop import NoOpTextMapPropagator
+from logfire import ConsoleOptions, LogfireLoggingHandler
 
-# 1. Nonaktifkan propagasi otomatis (tidak relevan untuk mode konsol)
-set_propagator(NoOpTextMapPropagator())
-
-# 2. Konfigurasi Logfire untuk HANYA menggunakan ConsoleExporter.
+# 1. Konfigurasi Logfire untuk HANYA menggunakan output konsol.
 # Ini memberitahunya untuk tidak mencoba mencari token atau mengirim data ke cloud.
 logfire.configure(
     send_to_logfire=False, # Eksplisit lebih baik
-    exporters=[ConsoleExporter()],
+    console=ConsoleOptions()
 )
 
-# 3. Lanjutkan dengan instrumentasi seperti biasa.
+# 2. Lanjutkan dengan instrumentasi seperti biasa.
 logfire.instrument_pydantic()
+
+# 3. Integrasikan dengan standard logging Python
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[LogfireLoggingHandler()],
+    force=True, # force=True diperlukan untuk menimpa konfigurasi uvicorn
+)
 # -----------------------------------------------------------------
 
 # --- [BAGIAN 2: INISIALISASI APLIKASI FASTAPI] ---

@@ -111,39 +111,49 @@ async def delete_warehouse(db: AsyncSession, warehouse_id: int) -> Warehouse:
 
 # --- Rack Services ---
 
-async def get_rack_by_id(db: AsyncSession, rack_id: int) -> Optional[Rack]:
+async def get_all_racks(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Rack]:
     """
-    Mengambil satu rack berdasarkan ID, dengan semua relasi yang dibutuhkan sudah di-load.
+    Mengambil daftar semua rak dengan eager loading yang dalam.
     """
+    query = (
+        select(Rack)
+        .order_by(Rack.id)
+        .offset(skip)
+        .limit(limit)
+        .options(
+            # Muat relasi langsung dari Rack
+            selectinload(Rack.warehouse),
+            selectinload(Rack.location_type),
+            
+            # ✅ ===================================================================
+            # ✅ SOLUSI UTAMA: Chained Eager Loading untuk placement
+            # ✅ ===================================================================
+            # 1. Muat relasi 'placement' dari Rack.
+            # 2. LALU, dari 'placement' itu, muat relasi 'allocation'-nya.
+            # 3. LALU, dari 'allocation' itu, muat relasi-relasi lainnya.
+            selectinload(Rack.placement).selectinload(StockPlacement.allocation).selectinload(Allocation.batch),
+            selectinload(Rack.placement).selectinload(StockPlacement.allocation).selectinload(Allocation.allocation_type)
+            # ===================================================================
+        )
+    )
+    result = await db.execute(query)
+    # .unique() sangat penting saat menggunakan eager loading
+    return result.unique().scalars().all()
+
+# Jika Anda memiliki fungsi lain seperti get_rack_by_id, terapkan eager loading yang sama di sana.
+async def get_rack_by_id(db: AsyncSession, rack_id: int) -> Rack | None:
     query = (
         select(Rack)
         .where(Rack.id == rack_id)
-        # ✅ REFACTOR: Eager load relasi yang ada di skema Pydantic Rack.
         .options(
+            selectinload(Rack.warehouse),
             selectinload(Rack.location_type),
-            selectinload(Rack.placement).selectinload(StockPlacement.allocation)
+            selectinload(Rack.placement).selectinload(StockPlacement.allocation).selectinload(Allocation.batch),
+            selectinload(Rack.placement).selectinload(StockPlacement.allocation).selectinload(Allocation.allocation_type)
         )
     )
     result = await db.execute(query)
-    return result.scalar_one_or_none()
-
-async def get_all_racks(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Rack]:
-    """
-    Mengambil daftar rack, dengan semua relasi yang dibutuhkan sudah di-load.
-    """
-    query = (
-        select(Rack)
-        .offset(skip)
-        .limit(limit)
-        .order_by(Rack.id)
-        # ✅ REFACTOR: Eager load relasi untuk setiap item dalam daftar.
-        .options(
-            selectinload(Rack.location_type),
-            selectinload(Rack.placement)
-        )
-    )
-    result = await db.execute(query)
-    return result.scalars().all()
+    return result.unique().scalar_one_or_none()
 
 async def create_rack(db: AsyncSession, rack_in: RackCreate) -> Rack:
     """
