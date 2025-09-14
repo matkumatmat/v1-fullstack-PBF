@@ -2,88 +2,43 @@
 
 from datetime import date, datetime
 from sqlalchemy import (
-    Integer, String, ForeignKey, Text, Date, Numeric, Boolean,
-    Enum as SQLAlchemyEnum, Table, DateTime, func
+    Integer, String, ForeignKey, Text, Date, Numeric,
+    DateTime, func
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
-
-# ✅ FIXED: Mengimpor BaseModel yang benar dari modul configuration
 from ..configuration import BaseModel
-
-# ✅ FIXED: Menggunakan TYPE_CHECKING untuk semua referensi silang
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..users import Customer
     from ..product import Allocation, Product, Batch
-    # Asumsi model Shipment akan ada di masa depan
-    # from ..shipment import Shipment 
-
-# --- Consignment Agreement (Master Data) ---
 
 class ConsignmentAgreement(BaseModel):
-    """
-    Model untuk Perjanjian Konsinyasi dengan Customer.
-    Direfaktor ke sintaks modern SQLAlchemy.
-    """
     __tablename__ = 'consignment_agreements'
-    
-    agreement_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-    
-    # Customer information
+    consignments_code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
-    
-    # Agreement details
     agreement_date: Mapped[date] = mapped_column(Date, nullable=False)
-    start_date: Mapped[date] = mapped_column(Date, nullable=False)
-    end_date: Mapped[Optional[date]] = mapped_column(Date)
-    
-    # Terms and conditions
-    commission_rate: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
-    payment_terms_days: Mapped[int] = mapped_column(Integer, default=30)
-    return_policy_days: Mapped[int] = mapped_column(Integer, default=90)
-    
-    # Status
+    payment_terms_days: Mapped[int] = mapped_column(Integer, default=90)
     status: Mapped[str] = mapped_column(String(20), default='ACTIVE')
-    
-    # Document references
+
     contract_document_url: Mapped[Optional[str]] = mapped_column(String(255))
     terms_document_url: Mapped[Optional[str]] = mapped_column(String(255))
-    
-    # Tracking
     created_by: Mapped[Optional[str]] = mapped_column(String(50))
-    approved_by: Mapped[Optional[str]] = mapped_column(String(50))
-    approved_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    
-    # --- Relationships ---
+
     customer: Mapped['Customer'] = relationship(back_populates='consignment_agreements')
     consignments: Mapped[List['Consignment']] = relationship(back_populates='agreement')
     statements: Mapped[List['ConsignmentStatement']] = relationship(back_populates='agreement')
-
     def __repr__(self) -> str:
         return f'<ConsignmentAgreement {self.agreement_number}>'
 
-# --- Consignment Process (Transactional Models) ---
 
 class Consignment(BaseModel):
-    """
-    Model untuk satu pengiriman konsinyasi.
-    """
     __tablename__ = 'consignments'
-    
     consignment_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-    
-    # Foreign Keys
     agreement_id: Mapped[int] = mapped_column(ForeignKey('consignment_agreements.id'), nullable=False)
     allocation_id: Mapped[int] = mapped_column(ForeignKey('allocations.id'), unique=True, nullable=False)
     # shipment_id: Mapped[Optional[int]] = mapped_column(ForeignKey('shipments.id'))
-    
-    # Details
-    consignment_date: Mapped[date] = mapped_column(Date, nullable=False)
-    expected_return_date: Mapped[Optional[date]] = mapped_column(Date)
-    actual_return_date: Mapped[Optional[date]] = mapped_column(Date)
-    
-    # Financials
+
     total_value: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
     commission_rate: Mapped[Optional[float]] = mapped_column(Numeric(5, 2))
     
@@ -93,17 +48,12 @@ class Consignment(BaseModel):
     # Notes
     notes: Mapped[Optional[str]] = mapped_column(Text)
     terms_conditions: Mapped[Optional[str]] = mapped_column(Text)
-    
-    # Tracking
     created_by: Mapped[Optional[str]] = mapped_column(String(50))
     shipped_by: Mapped[Optional[str]] = mapped_column(String(50))
     shipped_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
-    
-    # --- Relationships ---
     agreement: Mapped['ConsignmentAgreement'] = relationship(back_populates='consignments')
     allocation: Mapped['Allocation'] = relationship(back_populates='consignments')
     # shipment: Mapped[Optional['Shipment']] = relationship(back_populates='consignments')
-    
     items: Mapped[List['ConsignmentItem']] = relationship(back_populates='consignment', cascade='all, delete-orphan')
     sales: Mapped[List['ConsignmentSale']] = relationship(back_populates='consignment', cascade='all, delete-orphan')
     returns: Mapped[List['ConsignmentReturn']] = relationship(back_populates='consignment', cascade='all, delete-orphan')
@@ -285,18 +235,3 @@ class ConsignmentStatement(BaseModel):
 
     def __repr__(self) -> str:
         return f'<ConsignmentStatement {self.statement_number}>'
-
-# ✅ PENTING: Tambahkan relasi balik (back_populates) di model Customer
-# Buka file app/models/users/customer.py dan tambahkan relasi ini di dalam kelas Customer:
-#
-# class Customer(BaseModel):
-#     # ... relasi lain ...
-#     consignment_agreements: Mapped[List['ConsignmentAgreement']] = relationship(back_populates='customer')
-#     consignment_statements: Mapped[List['ConsignmentStatement']] = relationship(back_populates='customer')
-
-# ✅ PENTING: Tambahkan relasi balik (back_populates) di model Allocation
-# Buka file app/models/product/allocation.py dan tambahkan relasi ini di dalam kelas Allocation:
-#
-# class Allocation(BaseModel):
-#     # ... relasi lain ...
-#     consignments: Mapped[List['Consignment']] = relationship(back_populates='allocation')

@@ -10,12 +10,9 @@ from ..configuration import BaseModel,AllocationStatusEnum
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..configuration import AllocationType
-    from ..order_process import SalesOrderItem
     from ..users import Customer
     from ..warehouse import RackItem
     from .batch import Batch
-    from ..process import Consignment
-    from ..process import TenderContract
 
 allocation_batches_association = Table(
     'allocation_batches', BaseModel.metadata,
@@ -41,11 +38,6 @@ class Allocation(BaseModel):
     allocation_type: Mapped['AllocationType'] = relationship(back_populates='allocations')
     customer: Mapped[Optional['Customer']] = relationship(back_populates='allocations')  
     placements: Mapped[List['RackItem']] = relationship(back_populates='racks_allocations')
-    # picking_order_items: Mapped[List['PickingOrderItem']] = relationship(back_populates='allocation')
-    # picking_list_items: Mapped[List['PickingListItem']] = relationship(back_populates='allocation')
-    consignments: Mapped[List['Consignment']] = relationship(back_populates='allocation')
     # stock_movements: Mapped[List['StockMovement']] = relationship(back_populates='allocation')
-    #tender_contract_id: Mapped[Optional[int]] = mapped_column(ForeignKey('tender_contracts.id'))
-    #tender_contract: Mapped[Optional['TenderContract']] = relationship(back_populates='allocations')
     def __repr__(self) -> str:
         return f"<Allocation(id={self.id})>"
