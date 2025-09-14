@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import (
     Integer, String, ForeignKey, Date, Numeric, Text,
-    Enum as SQLAlchemyEnum
+    Enum as SQLAlchemyEnum, Table, Column
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
@@ -17,6 +17,12 @@ if TYPE_CHECKING:
     from ..process import Consignment
     from ..process import TenderContract
 
+allocation_batches_association = Table(
+    'allocation_batches', BaseModel.metadata,
+    Column('allocation_id', Integer, ForeignKey('allocations.id'), primary_key=True),
+    Column('batch_id', Integer, ForeignKey('batches.id'), primary_key=True)
+)
+
 class Allocation(BaseModel):
     __tablename__ = 'allocations'
     allocated_quantity: Mapped[int] = mapped_column(Integer, default=0, server_default=0, active_history=True, info={'check': 'allocated_quantity >= 0'}) 
@@ -29,7 +35,9 @@ class Allocation(BaseModel):
     customer_id: Mapped[Optional[int]] = mapped_column(ForeignKey('customers.id'))
     original_reserved_quantity: Mapped[int] = mapped_column(Integer, default=0)
     customer_allocated_quantity: Mapped[int] = mapped_column(Integer, default=0)
-    batch: Mapped['Batch'] = relationship(back_populates='allocations')
+    batches: Mapped[List['Batch']] = relationship(
+            secondary=allocation_batches_association, 
+            back_populates='allocations')    
     allocation_type: Mapped['AllocationType'] = relationship(back_populates='allocations')
     customer: Mapped[Optional['Customer']] = relationship(back_populates='allocations')  
     placements: Mapped[List['RackItem']] = relationship(back_populates='racks_allocations')

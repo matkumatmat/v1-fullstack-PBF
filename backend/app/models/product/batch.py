@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ..users import Customer
     from ..warehouse import StockPlacement
     from .product import Product
-    from .allocation import Allocation
+    from .allocation import Allocation, allocation_batches_association
 
 class Batch(BaseModel):
     __tablename__ = 'batches'
@@ -37,8 +37,9 @@ class Batch(BaseModel):
 
     # --- Relationships ---
     product: Mapped['Product'] = relationship(back_populates='batches')
-    allocations: Mapped[List['Allocation']] = relationship(back_populates='batch')
-    
+    allocations: Mapped[List['Allocation']] = relationship(
+        secondary=allocation_batches_association, back_populates='batches'
+    )    
     # Merefaktor relasi yang dikomentari ke sintaks modern.
     # stock_movements: Mapped[List['StockMovement']] = relationship(back_populates='batch')
 

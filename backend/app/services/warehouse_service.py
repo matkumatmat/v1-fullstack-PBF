@@ -265,3 +265,46 @@ async def remove_stock_from_rack(db: AsyncSession, rack_id: int) -> Rack:
     
     # ✅ REFACTOR: Panggil kembali untuk mendapatkan objek Rack yang sudah ter-update dan lengkap.
     return await get_rack_by_id(db, rack_id)
+
+
+# file: app/services/warehouse_service.py
+
+from app.models import Rack, RackItem, Allocation, Batch, RackStatusEnum
+from app.schemas.warehouse import RackItemCreate # Buat skema ini
+from app.core.exceptions import NotFoundException, BadRequestException
+
+async def place_item_in_rack(db: AsyncSession, item_in: RackItemCreate) -> RackItem:
+    """
+    Menempatkan item (dari alokasi & batch tertentu) ke dalam rak.
+    Secara otomatis mengupdate status rak menjadi FULL.
+    """
+    async with db.begin_nested():
+        # 1. Validasi semua entitas
+        rack = await db.get(Rack, item_in.rack_id, options=[selectinload(Rack.item)])
+        if not rack:
+            raise NotFoundException(f"Rack with id {item_in.rack_id} not found.")
+        if rack.status == RackStatusEnum.FULL or rack.item is not None:
+            raise BadRequestException(f"Rack {rack.code} is already filled.")
+            
+        allocation = await db.get(Allocation, item_in.allocation_id)
+        if not allocation:
+            raise NotFoundException(f"Allocation with id {item_in.allocation_id} not found.")
+            
+        batch = await db.get(Batch, item_in.batch_id)
+        if not batch:
+            raise NotFoundException(f"Batch with id {item_in.batch_id} not found.")
+            
+        # (Tambahkan validasi lain di sini, misal: apakah batch ada di dalam alokasi)
+
+        # 2. Buat RackItem baru
+        new_item = RackItem(**item_in.model_dump())
+        
+        # 3. ✅ LOGIKA "ONUPDATE": Ubah status rak
+        rack.status = RackStatusEnum.FULL
+        
+        db.add(new_item)
+        db.add(rack)
+        
+        await db.flush()
+        await db.refresh(new_item)
+        return new_item

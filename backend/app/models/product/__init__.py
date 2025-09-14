@@ -3,5 +3,5 @@ from .batch import Batch
 from .allocation import Allocation
 
 __all__ = [
-    "Product","Batch","Allocation"
+    "Product","Batch","Allocation","allocation_batches_association"
 ]
