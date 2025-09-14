@@ -13,21 +13,6 @@ if TYPE_CHECKING:
     from ..product import Product, Allocation
     from ..warehouse import Warehouse
     from ..users import Customer
-    from ..order_process import SalesOrderItem
-
-sales_order_item_sector_association = Table(
-    'so_item_sector_association',
-    BaseModel.metadata,
-    Column('sales_order_item_id', Integer, ForeignKey('sales_order_items.id'), primary_key=True),
-    Column('sector_type_id', Integer, ForeignKey('sector_types.id'), primary_key=True)
-)
-
-sales_order_item_allocation_association = Table(
-    'so_item_allocation_association',
-    BaseModel.metadata,
-    Column('sales_order_item_id', Integer, ForeignKey('sales_order_items.id'), primary_key=True),
-    Column('allocation_type_id', Integer, ForeignKey('allocation_types.id'), primary_key=True)
-)
 
 class ProductType(BaseModel):
     """Master data untuk jenis produk"""
@@ -87,7 +72,7 @@ class SectorType(BaseModel):
     requires_temperature_monitoring: Mapped[bool] = mapped_column(Boolean, default=False)
     special_documentation: Mapped[Optional[str]] = mapped_column(Text)
     customers: Mapped[List['Customer']] = relationship(back_populates='sector_type')
-    sales_order_items: Mapped[List['SalesOrderItem']] = relationship(secondary=sales_order_item_sector_association, back_populates='sectors')    
+    #sales_order_items: Mapped[List['SalesOrderItem']] = relationship(secondary=sales_order_item_sector_association, back_populates='sectors')    
     def __repr__(self) -> str:
         return f'<SectorType code="{self.code}" name="{self.name}">'
         
@@ -191,7 +176,7 @@ class ProductPrice(BaseModel):
     HJP: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
     HET: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
     product: Mapped['Product'] = relationship(back_populates='prices')
-    sales_order_items: Mapped[List['SalesOrderItem']] = relationship(back_populates='product_price_entry')
+    #sales_order_items: Mapped[List['SalesOrderItem']] = relationship(back_populates='product_price_entry')
     def __repr__(self) -> str:
         # `__repr__` yang aman, tidak memicu lazy load pada `product`.
         return f'<ProductPrice code="{self.code}" product_id={self.product_id}>'   

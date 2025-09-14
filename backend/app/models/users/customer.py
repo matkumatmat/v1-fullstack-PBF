@@ -7,7 +7,6 @@ from ..configuration import BaseModel,AddressTypeEnum
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..configuration import CustomerType, SectorType
-    from ..order_process import SalesOrder
     from ..product import Allocation
 
 class Customer(BaseModel):
@@ -18,7 +17,7 @@ class Customer(BaseModel):
     sector_type_id: Mapped[int] = mapped_column(ForeignKey('sector_types.id'), nullable=False)
     customer_type: Mapped['CustomerType'] = relationship(back_populates='customers')
     sector_type: Mapped['SectorType'] = relationship(back_populates='customers')
-    sales_orders: Mapped[List['SalesOrder']] = relationship(back_populates='customer')
+    #sales_orders: Mapped[List['SalesOrder']] = relationship(back_populates='customer')
     allocations: Mapped[List['Allocation']] = relationship(back_populates='customer')
     #consignment_agreements: Mapped[List['ConsignmentAgreement']] = relationship(back_populates='customer')
     #consignment_statements: Mapped[List['ConsignmentStatement']] = relationship(back_populates='customer')    
