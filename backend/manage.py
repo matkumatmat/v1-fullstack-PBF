@@ -16,7 +16,7 @@ load_dotenv()
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-from app.database import Base, async_engine
+from app.database.database import Base, async_engine
 from alembic.config import Config
 from alembic import command
 

@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import (
     Integer, String, ForeignKey, Text, Date, Numeric, Boolean,
-    UniqueConstraint, Table, Column, Enum as SQLAlchemyEnum 
+    UniqueConstraint,Enum as SQLAlchemyEnum 
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
@@ -66,11 +66,8 @@ class SectorType(BaseModel):
     code: Mapped[str] = mapped_column(String(10), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
-    requires_special_handling: Mapped[bool] = mapped_column(Boolean, default=False)
     default_payment_terms: Mapped[Optional[int]] = mapped_column(Integer)
     default_delivery_terms: Mapped[Optional[str]] = mapped_column(String(50))
-    requires_temperature_monitoring: Mapped[bool] = mapped_column(Boolean, default=False)
-    special_documentation: Mapped[Optional[str]] = mapped_column(Text)
     customers: Mapped[List['Customer']] = relationship(back_populates='sector_type')
     #sales_order_items: Mapped[List['SalesOrderItem']] = relationship(secondary=sales_order_item_sector_association, back_populates='sectors')    
     def __repr__(self) -> str:
@@ -93,12 +90,9 @@ class DocumentType(BaseModel):
     code: Mapped[str] = mapped_column(String(10), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    is_mandatory: Mapped[bool] = mapped_column(Boolean, default=False)
     is_customer_visible: Mapped[bool] = mapped_column(Boolean, default=True)
     max_file_size_mb: Mapped[int] = mapped_column(Integer, default=10)
     allowed_extensions: Mapped[Optional[str]] = mapped_column(String(100))
-    auto_generate: Mapped[bool] = mapped_column(Boolean, default=False)
     template_path: Mapped[Optional[str]] = mapped_column(String(255))
     # shipment_documents: Mapped[List['ShipmentDocument']] = relationship(back_populates='document_type')
     def __repr__(self) -> str:
@@ -106,15 +100,12 @@ class DocumentType(BaseModel):
 
 class StatusType(BaseModel):
     __tablename__ = 'status_types'
-    entity_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     code: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
-    sort_order: Mapped[int] = mapped_column(Integer, default=0)
     color_code: Mapped[Optional[str]] = mapped_column(String(7))
     icon: Mapped[Optional[str]] = mapped_column(String(50))
     css_class: Mapped[Optional[str]] = mapped_column(String(50))
-    auto_transition_after_hours: Mapped[Optional[int]] = mapped_column(Integer)
     requires_approval: Mapped[bool] = mapped_column(Boolean, default=False)
     sends_notification: Mapped[bool] = mapped_column(Boolean, default=False)
     __table_args__ = (UniqueConstraint('entity_type', 'code', name='uq_status_entity_code'),)
@@ -156,6 +147,7 @@ class NotificationType(BaseModel):
     
 class DeliveryType(BaseModel):
     __tablename__ = 'delivery_methods'
+    code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
     estimated_days: Mapped[Optional[int]] = mapped_column(Integer)

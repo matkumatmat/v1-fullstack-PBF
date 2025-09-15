@@ -4,7 +4,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Impor nama yang benar (AsyncSessionLocal) dan beri alias sebagai SessionLocal
-from app.database import AsyncSessionLocal as SessionLocal
+from app.database.database import AsyncSessionLocal as SessionLocal
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as session:

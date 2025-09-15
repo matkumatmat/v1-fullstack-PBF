@@ -1,1 +1,0 @@
-##saya memerlukan model untuk log aktivitas yang di lakukan oleh user

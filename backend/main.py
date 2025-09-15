@@ -26,7 +26,7 @@ app = FastAPI(
 
 logfire.instrument_fastapi(app)
 
-from app.api.api import api_router
+from app.api.v1 import api_router
 
 origins = [
     "http://localhost",
@@ -42,10 +42,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router, prefix="/api/api")
+app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
     """Endpoint root sederhana untuk pengujian."""
     logfire.info('Root endpoint was called!')
-    return {"message": "Welcome to the WMS API"}
+    return {"message": "Welcome to the PBF API"}
