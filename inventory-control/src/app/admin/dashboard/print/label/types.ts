@@ -33,6 +33,13 @@ export type PrintGroup = {
   produk_list: Product[];
 };
 
+export type ClientSidePrintLog = {
+  id: string; // uuid
+  pt_tujuan: string;
+  timestamp: string;
+  items: PrintPayloadItem[];
+};
+
 export type Product = {
   nama: string;
   qty: string;

@@ -1,0 +1,462 @@
+[
+    "prompts/1j7d2l_UtsDY_H3FrWXSfp61tmlQS-Iyq",
+    null,
+    null,
+    [
+        0.25,
+        null,
+        "models/gemini-2.5-flash-image-preview",
+        null,
+        0.95,
+        64,
+        8192,
+        null,
+        null,
+        0,
+        null,
+        null,
+        null,
+        null,
+        0,
+        [
+            2,
+            1
+        ],
+        null,
+        0,
+        0
+    ],
+    [
+        "Dua Individu Berpose Dalam Studio",
+        null,
+        [
+            "mamatte Wahyu",
+            1,
+            "https://lh3.googleusercontent.com/a/ACg8ocL6rbPWBiJhR5-XoOV_OsCR7xpoEueK5aGYyEiEO4dA2MHZ3g=s64"
+        ],
+        null,
+        [
+            [
+                "1758017008",
+                4000000
+            ],
+            [
+                "mamatte Wahyu",
+                1,
+                "https://lh3.googleusercontent.com/a/ACg8ocL6rbPWBiJhR5-XoOV_OsCR7xpoEueK5aGYyEiEO4dA2MHZ3g=s64"
+            ]
+        ],
+        [
+            1,
+            1,
+            1
+        ],
+        null,
+        null,
+        null,
+        null,
+        []
+    ],
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    [],
+    [
+        [
+            [
+                null,
+                [
+                    "1t90EQotBBfHB-y8-OCbLii_COcV-hxxS"
+                ],
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "user",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                1291
+            ],
+            [
+                "deskripsikan gambar berikut menjadi sebuah deskripsi yang sangat deskritif tanpa mendeskripsikan warna kulit, rambut, dan wajah. ",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "user",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                29
+            ],
+            [
+                "Dalam gambar ini, dua individu berpose di studio dengan pencahayaan yang dramatis. Individu di latar depan, yang lebih fokus, mengenakan setelan jas dengan detail pola yang halus dan kalung rantai tebal dengan liontin melingkar. Pencahayaan merah yang kuat menyoroti sisi kanan setelannya, menciptakan kontras yang mencolok. Individu ini melihat langsung ke arah kamera dengan ekspresi yang intens.\n\nDi latar belakang, individu kedua berdiri sedikit di luar fokus, mengenakan setelan jas berwarna terang dengan kemeja di dalamnya. Sebuah tas kecil dengan tali selempang terlihat di bahunya. Individu ini juga melihat ke arah kamera, namun dengan ekspresi yang lebih santai. Latar belakang studio berwarna putih polos, memungkinkan fokus sepenuhnya pada kedua subjek dan pakaian mereka.",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "model",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                1,
+                null,
+                166,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                [
+                    [
+                        null,
+                        "Dalam"
+                    ],
+                    [
+                        null,
+                        " gambar ini, dua"
+                    ],
+                    [
+                        null,
+                        " individu ber"
+                    ],
+                    [
+                        null,
+                        "pose"
+                    ],
+                    [
+                        null,
+                        " di studio dengan"
+                    ],
+                    [
+                        null,
+                        " penc"
+                    ],
+                    [
+                        null,
+                        "ahayaan yang dram"
+                    ],
+                    [
+                        null,
+                        "atis. Individu"
+                    ],
+                    [
+                        null,
+                        " di"
+                    ],
+                    [
+                        null,
+                        " latar"
+                    ],
+                    [
+                        null,
+                        " depan"
+                    ],
+                    [
+                        null,
+                        ", yang lebih fokus"
+                    ],
+                    [
+                        null,
+                        ", mengenakan set"
+                    ],
+                    [
+                        null,
+                        "elan jas"
+                    ],
+                    [
+                        null,
+                        " dengan"
+                    ],
+                    [
+                        null,
+                        " detail"
+                    ],
+                    [
+                        null,
+                        " pola"
+                    ],
+                    [
+                        null,
+                        " yang halus"
+                    ],
+                    [
+                        null,
+                        " dan"
+                    ],
+                    [
+                        null,
+                        " kal"
+                    ],
+                    [
+                        null,
+                        "ung rant"
+                    ],
+                    [
+                        null,
+                        "ai te"
+                    ],
+                    [
+                        null,
+                        "bal dengan"
+                    ],
+                    [
+                        null,
+                        " lion"
+                    ],
+                    [
+                        null,
+                        "tin mel"
+                    ],
+                    [
+                        null,
+                        "ingkar. Penc"
+                    ],
+                    [
+                        null,
+                        "ahayaan merah"
+                    ],
+                    [
+                        null,
+                        " yang"
+                    ],
+                    [
+                        null,
+                        " kuat"
+                    ],
+                    [
+                        null,
+                        " menyor"
+                    ],
+                    [
+                        null,
+                        "oti sisi"
+                    ],
+                    [
+                        null,
+                        " kanan"
+                    ],
+                    [
+                        null,
+                        " set"
+                    ],
+                    [
+                        null,
+                        "el"
+                    ],
+                    [
+                        null,
+                        "annya, menciptakan kont"
+                    ],
+                    [
+                        null,
+                        "ras yang menc"
+                    ],
+                    [
+                        null,
+                        "olok. Individu"
+                    ],
+                    [
+                        null,
+                        " ini"
+                    ],
+                    [
+                        null,
+                        " melihat"
+                    ],
+                    [
+                        null,
+                        " langsung"
+                    ],
+                    [
+                        null,
+                        " ke arah"
+                    ],
+                    [
+                        null,
+                        " kamera dengan ekspresi"
+                    ],
+                    [
+                        null,
+                        " yang intens"
+                    ],
+                    [
+                        null,
+                        ".\n\nDi latar"
+                    ],
+                    [
+                        null,
+                        " belakang, individu kedua"
+                    ],
+                    [
+                        null,
+                        " berdiri"
+                    ],
+                    [
+                        null,
+                        " sedikit"
+                    ],
+                    [
+                        null,
+                        " di"
+                    ],
+                    [
+                        null,
+                        " luar fokus,"
+                    ],
+                    [
+                        null,
+                        " mengenakan setelan"
+                    ],
+                    [
+                        null,
+                        " jas berwarna"
+                    ],
+                    [
+                        null,
+                        " terang"
+                    ],
+                    [
+                        null,
+                        " dengan"
+                    ],
+                    [
+                        null,
+                        " kemeja di"
+                    ],
+                    [
+                        null,
+                        " dalamnya. Sebuah"
+                    ],
+                    [
+                        null,
+                        " tas"
+                    ],
+                    [
+                        null,
+                        " kecil"
+                    ],
+                    [
+                        null,
+                        " dengan tali"
+                    ],
+                    [
+                        null,
+                        " selempang terlihat"
+                    ],
+                    [
+                        null,
+                        " di bah"
+                    ],
+                    [
+                        null,
+                        "unya. Individu"
+                    ],
+                    [
+                        null,
+                        " ini juga"
+                    ],
+                    [
+                        null,
+                        " melihat ke arah kamera"
+                    ],
+                    [
+                        null,
+                        ", namun"
+                    ],
+                    [
+                        null,
+                        " dengan ekspresi yang"
+                    ],
+                    [
+                        null,
+                        " lebih sant"
+                    ],
+                    [
+                        null,
+                        "ai. L"
+                    ],
+                    [
+                        null,
+                        "atar belakang studio"
+                    ],
+                    [
+                        null,
+                        " berwarna"
+                    ],
+                    [
+                        null,
+                        " putih polos"
+                    ],
+                    [
+                        null,
+                        ", memungkinkan"
+                    ],
+                    [
+                        null,
+                        " fokus sepenuhnya"
+                    ],
+                    [
+                        null,
+                        " pada kedua sub"
+                    ],
+                    [
+                        null,
+                        "jek dan"
+                    ],
+                    [
+                        null,
+                        " pakaian mereka."
+                    ]
+                ]
+            ]
+        ],
+        [
+            [
+                "",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "user"
+            ]
+        ]
+    ]
+]
