@@ -56,7 +56,7 @@ export default function PrintQueueSection({ items, isLoading }: PrintQueueSectio
             </Badge>
           </TableCell>
           <TableCell>
-            <div className="flex justify-center items-center gap-2">
+            <div className=" gap-2">
               <Button variant="outline" size="icon" className="text-slate-200 border-slate-600 hover:bg-green-900/50 hover:text-green-400 hover:border-green-600">
                 <Printer className="h-4 w-4" />
               </Button>
@@ -93,10 +93,10 @@ export default function PrintQueueSection({ items, isLoading }: PrintQueueSectio
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[20%] text-lg -font-bold">Tujuan Pengiriman</TableHead>
-                <TableHead className="w-[15%] text-lg font-bold">Total Box</TableHead>
-                <TableHead className="w-[15%] text-lg font-bold">Status</TableHead>
-                <TableHead className="w-[15%] text-lg font-bold">Keterangan</TableHead>
+                <TableHead className="w-[25%] text-lg -font-bold">Tujuan Pengiriman</TableHead>
+                <TableHead className="w-[25%] text-lg font-bold">Total Box</TableHead>
+                <TableHead className="w-[25%] text-lg font-bold">Status</TableHead>
+                <TableHead className="w-[25%] text-lg font-bold">Keterangan</TableHead>
                 <TableHead className="text-center text-lg w-[30%] font-bold">Aksi</TableHead>
               </TableRow>
             </TableHeader>

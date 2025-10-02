@@ -6,10 +6,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, Pencil, PlusCircle, Trash } from 'lucide-react';
-import { AddressComboBox } from './address-combo-box';
+import { ChevronDown, Pencil, CirclePlus, Trash, PlusCircle } from 'lucide-react';
+import { SectorComboBox } from './sector-combo-box';
+import { CustomerComboBox } from './customer-combo-box';
 import type { Customer, Address } from '../types';
 import { dummyCustomers } from '../dummy-data-address';
+import CustomerSearch from './customer-search';
+import { AddCustomerDialog } from './add-customer-dialog'; 
+
+
 
 export default function AddressManagementSection() {
   const [customers, setCustomers] = useState<Customer[]>(dummyCustomers);
@@ -22,16 +27,27 @@ export default function AddressManagementSection() {
           <h1 className="text-3xl font-bold text-white">Manajemen Alamat</h1>
           <p className="text-slate-400 mt-1">Kelola semua data tujuan di database.</p>
         </div>
-        <div className="mt-4 sm:mt-0">
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Tambah Customer
-          </Button>
-        </div>
       </div>
       <Card className="mt-4">
         <CardContent>
-          <AddressComboBox/>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 pb-6">
+            <div className="col-start-1">
+              <SectorComboBox/>
+            </div>
+            <div className='col-span-2'>
+              <CustomerComboBox/>
+            </div>
+            <div className='col-start-5'>
+              <div className="mt-4 sm:mt-0 flex justify-end items-center">
+                <AddCustomerDialog />
+              </div>              
+            </div>
+            <div className='col-start-6'>
+              <div className="mt-4 sm:mt-0 flex justify-center items-center">
+                <CustomerSearch/>
+              </div>              
+            </div>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -40,7 +56,7 @@ export default function AddressManagementSection() {
                 <TableHead className='w-[20%] font-bold text-lg'>Provinsi</TableHead>
                 <TableHead className='w-[20%] font-bold text-lg'>Kota</TableHead>
                 <TableHead className='w-[30%] font-bold text-lg'>Jumlah Alamat</TableHead>
-                <TableHead className=""></TableHead> {/* Kolom untuk tombol expand */}
+                <TableHead className=""></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -67,8 +83,7 @@ export default function AddressManagementSection() {
                     <CollapsibleContent asChild>
                       <TableRow>
                         <TableCell colSpan={5} className="p-0">
-                          <div className="bg-slate-900/50 p-4">
-                            <h4 className="font-semibold mb-3 ml-2">Detail Alamat:</h4>
+                          <div className=" p-4">
                             <div className="space-y-4">
                               {customer.customer_addresses.map(address => (
                                 <AddressCard key={address.uuid} address={address} />

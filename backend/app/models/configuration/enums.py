@@ -3,26 +3,21 @@ import enum
 class AddressTypeEnum(str, enum.Enum):
     DISTRIBUTOR = "DISTRIBUTOR"
     CUSTOMER = "CUSTOMER"
-    OFFICE = "OFFICE"
-    WAREHOUSE = "WAREHOUSE"
     MANUFACTURER = "MANUFACTURER"
-
-class WarehouseStatusEnum(str, enum.Enum):
-    ACTIVE = "ACTIVE"
-    INACTIVE = "INACTIVE"
-    MAINTENANCE = "MAINTENANCE"
 
 class RackStatusEnum(str, enum.Enum):
     ACTIVE = "ACTIVE"
-    MAINTENANCE = "MAINTENANCE"
     FULL = "FULL"
+    RESERVED = "RESERVED"
 
-class AllocationStatusEnum(str, enum.Enum):
-    ACTIVE = "ACTIVE"
-    CLOSED = "CLOSED"
-    QUARANTINE = "QUARANTINE"
+class AllocationTypeEnum(str, enum.Enum):
+    SWASTA = "SWASTA"
+    TENDER = "TENDER"
+    PEMERINTAH = "PEMERINTAH"
+    BUFFER = "BUFFER"
+    HIBAH = "HIBAH"
 
-class BatchStatusEnum(str, enum.Enum):
+class BatchItemStatusEnum(str, enum.Enum):
     QUARANTINE ="QUARANTINE"
     ACTIVE ="ACTIVE"
     ALLOCATED ="ALLOCATED"
@@ -37,14 +32,14 @@ class SalesOrderStatusEnum(str, enum.Enum):
     CANCELLED = "CANCELLED" 
     COMPLETE = "COMPLETE"
     
-class ShippingPlanStatusEnum(str, enum.Enum):
+class ShippingStatusEnum(str, enum.Enum):
     PENDING = "PENDING"
     CONFIRMED = "CONFIRMED"
-    IN_TRANSIT = "IN_TRANSIT"
+    ON_PACKING = "ON_PACKING"
     DELIVERED = "DELIVERED"
     CANCELLED = "CANCELLED"
 
-class MovementDirectionEnum(str, enum.Enum):
+class MovementEnum(str, enum.Enum):
     IN = "IN"
     OUT = "OUT"
     TRANSFER = "TRANSFER"
@@ -52,6 +47,34 @@ class MovementDirectionEnum(str, enum.Enum):
 class PackagingEnum(str, enum.Enum):
     PACKAGING_MATERIAL="PACKAGING_MATERIAL"
     PACKAGING_BOX="PACKAGING_BOX"
+
+class PackagetypeEnum(str, enum.Enum):
+    CKS = "CKS"
+    CKS2 = "CKS2"
+    PU1 = "PU1"
+    PU2 = "PU2"
+    CK = "CK"
+
+class SectorTypeEnum(str, enum.Enum):
+    SWASTA = "SWASTA"    
+    PEMERINTAH = "P2M"
+
+class CustomerTypeEnum(str, enum.Enum)    :
+    PEMERINTAH ="PEMERINTAH"
+    DISTRIBUTOR = "DISTRIBUTOR"
+    RETAIL = "RETAIL"
+
+class ProductPriceEnum(str, enum.Enum)    :
+    HJP = "HJP"
+    HNA = "HNA"
+    HET = "HET"
+
+class TemperatureTypeEnum(str, enum.Enum):
+    ROOM = "ROOM TEMPERATURE"
+    COLD = "COLD TEMPERATURE"
+    MINUS = "MINUS TEMPERATURE"
+    EXTREME = "EXTREME TEMPERATURE"     
+
 
 
 

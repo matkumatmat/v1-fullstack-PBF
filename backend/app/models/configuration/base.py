@@ -1,5 +1,3 @@
-# file: app/models/configuration/base.py
-
 import uuid
 from datetime import datetime
 from sqlalchemy import DateTime, Integer, func

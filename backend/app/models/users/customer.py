@@ -1,57 +1,57 @@
+from __future__ import annotations
 from sqlalchemy import (
-    String, ForeignKey, Text, Boolean, Numeric, Enum as SQLAlchemyEnum
+    String, ForeignKey, Text, Boolean, Numeric, Enum as SQLAlchemyEnum, Integer
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
-from ..configuration import BaseModel,AddressTypeEnum
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..configuration import CustomerType, SectorType
-    from ..product import Allocation
+
+from ..configuration import BaseModel
+from ..configuration.enums import CustomerTypeEnum
+
+class CustomerSpecification(BaseModel):
+    __tablename__ = 'customer_specification'
+    customer_id :Mapped[int]=mapped_column(ForeignKey('customers.id'), unique=True, nullable=False)
+    default_credit_limit: Mapped[Optional[float]] = mapped_column(Numeric(15, 2), default=0.0)
+    current_credit_limit: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
+    default_payment_terms_days: Mapped[Optional[int]] = mapped_column(Integer, default=30)
+    minimal_order_value: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
+    delivery_instructions: Mapped[Optional[str]] = mapped_column(Text)
+    customer:Mapped[Customer]=relationship(back_populates='specification')
+
+class CustomerDetails(BaseModel):
+    __tablename__ = 'customer_details'
+    customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), unique=True, nullable=False)
+    bank: Mapped[Optional[str]] = mapped_column(String(100))
+    npwp: Mapped[Optional[str]] = mapped_column(String(25), unique=True, index=True)
+    rekening: Mapped[Optional[str]] = mapped_column(String(50))
+    customer: Mapped[Customer] = relationship(back_populates='details')  
 
 class Customer(BaseModel):
-    __tablename__ = 'customers'
-    code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    customer_type_id: Mapped[int] = mapped_column(ForeignKey('customer_types.id'), nullable=False)
-    sector_type_id: Mapped[int] = mapped_column(ForeignKey('sector_types.id'), nullable=False)
-    customer_type: Mapped['CustomerType'] = relationship(back_populates='customers')
-    sector_type: Mapped['SectorType'] = relationship(back_populates='customers')
-    #sales_orders: Mapped[List['SalesOrder']] = relationship(back_populates='customer')
-    allocations: Mapped[List['Allocation']] = relationship(back_populates='customer')
-    #consignment_agreements: Mapped[List['ConsignmentAgreement']] = relationship(back_populates='customer')
-    #consignment_statements: Mapped[List['ConsignmentStatement']] = relationship(back_populates='customer')    
-    addresses: Mapped[List['CustomerAddress']] = relationship(back_populates='customer', cascade='all, delete-orphan')
-    @property
-    def default_address(self) -> Optional['CustomerAddress']:
-        return next((addr for addr in self.addresses if addr.is_default), None)
-    @property
-    def delivery_addresses(self) -> List['CustomerAddress']:
-        return [addr for addr in self.addresses if addr.address_type == AddressTypeEnum.CUSTOMER and addr.is_active]    
-    def __repr__(self) -> str:
-        return f'<Customer id={self.id} tipe customer{self.customer_type.name}>'
+    __tablename__='customers'
+    name : Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    customer_type: Mapped[CustomerTypeEnum]= mapped_column(
+        SQLAlchemyEnum(CustomerTypeEnum, name='customer_type_enum', create_type=False),
+        nullable=False
+    )
+    specification: Mapped[CustomerSpecification]=relationship(
+        back_populates='customer', cascade='all, delete-orphan', uselist=False
+    )
+    details: Mapped[CustomerDetails]=relationship(
+        back_populates='customer', cascade='all, delete-orphan', uselist=False
+    )
+    branches: Mapped[List[Branch]] = relationship(
+        back_populates='customer',
+        cascade='all, delete-orphan',
+    )
 
-class CustomerAddress(BaseModel):
-    __tablename__ = 'customer_addresses'
-    customer_id: Mapped[int] = mapped_column(ForeignKey('customers.id'), nullable=False)
-    address_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    address_type: Mapped[AddressTypeEnum] = mapped_column(SQLAlchemyEnum(AddressTypeEnum, name="address_type_enum", create_type=False), default=AddressTypeEnum.CUSTOMER )
-    address_line1: Mapped[str] = mapped_column(String(200), nullable=False)
-    address_line2: Mapped[Optional[str]] = mapped_column(String(200))
-    city: Mapped[str] = mapped_column(String(50), nullable=False)
-    state_province: Mapped[Optional[str]] = mapped_column(String(50))
-    postal_code: Mapped[Optional[str]] = mapped_column(String(10))
-    country: Mapped[str] = mapped_column(String(50), default='Indonesia')
-    contact_person: Mapped[Optional[str]] = mapped_column(String(100))
-    contact_phone: Mapped[Optional[str]] = mapped_column(String(20))
-    contact_email: Mapped[Optional[str]] = mapped_column(String(100))
-    delivery_instructions: Mapped[Optional[str]] = mapped_column(Text)
-    special_requirements: Mapped[Optional[str]] = mapped_column(Text)
-    latitude: Mapped[Optional[float]] = mapped_column(Numeric(9, 6))
-    longitude: Mapped[Optional[float]] = mapped_column(Numeric(9, 6))
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    created_by: Mapped[Optional[str]] = mapped_column(String(50))
-    customer: Mapped['Customer'] = relationship(back_populates='addresses')
+    @property 
+    def root_branches(self) -> List[Branch]:
+        return[Branch for branch in self.branches if branch.parent_id is none]
+    
     def __repr__(self) -> str:
-        return f'<CustomerAddress id={self.id} customer_id={self.customer_id} name="{self.address_name}">'
+        return f'<Customer name="{self.name}">'
+    
+class Branch(BaseModel):
+    __tablename__:'Branches'
+    name:Mapped[str]= mapped_column(string(150), nullable=False)
+

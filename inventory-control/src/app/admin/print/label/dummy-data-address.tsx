@@ -79,8 +79,6 @@ const customer2: Customer = {
 export const dummyCustomers: Customer[] = [
   customer1,
   customer2,
-  customer1,
-  customer2,
 ];
 
 
@@ -106,3 +104,41 @@ export const dummyAddressesPayloadWithData: { uuid: string, addresses: Address[]
   ]
 };
 */
+
+export const DUMMY_CUSTOMERS: Customer[] = [
+  {
+    uuid: '1a2b3c-kftd-bdg',
+    customer: 'KFTD - BANDUNG',
+    customer_type: 'Distributor',
+    customer_sector_type: 'SWASTA',
+    customer_addresses: [], // Alamat bisa dikosongkan dulu untuk UI ini
+  },
+  {
+    uuid: '4d5e6f-ppi-bdg',
+    customer: 'PPI - BANDUNG',
+    customer_type: 'Distributor',
+    customer_sector_type: 'SWASTA',
+    customer_addresses: [],
+  },
+  {
+    uuid: '7g8h9i-kftd-jkt',
+    customer: 'KFTD - JAKARTA',
+    customer_type: 'Distributor',
+    customer_sector_type: 'SWASTA',
+    customer_addresses: [],
+  },
+  {
+    uuid: '0j1k2l-rs-harapan',
+    customer: 'RS Harapan Kita',
+    customer_type: 'Hospital',
+    customer_sector_type: 'PEMERINTAH',
+    customer_addresses: [],
+  },
+  {
+    uuid: '3m4n5o-surabaya-farma',
+    customer: 'Surabaya Farma',
+    customer_type: 'Apotek',
+    customer_sector_type: 'SWASTA',
+    customer_addresses: [],
+  },
+];

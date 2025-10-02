@@ -4,7 +4,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from typing import List, Optional
-from ..configuration import BaseModel, allocation_batches_association
+from ..configuration import BaseModel
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -25,11 +25,8 @@ class Batch(BaseModel):
     width: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     height: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
     weight: Mapped[Optional[float]] = mapped_column(Numeric(10, 3))
+    
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'), nullable=False)
-    product: Mapped['Product'] = relationship(back_populates='batches')
-    allocations: Mapped[List['Allocation']] = relationship(
-        secondary=allocation_batches_association,
-        back_populates='batches'
-    )  
+    product: Mapped['Product'] = relationship(back_populates='batches') 
     def __repr__(self) -> str:
         return f"<Batch(id={self.id})>"
