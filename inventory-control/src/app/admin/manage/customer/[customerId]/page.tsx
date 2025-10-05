@@ -11,15 +11,23 @@ import { CustomerActions, BranchActions } from './customer-detail-actions';
 
 // Skema dan fungsi fetch ini sudah benar untuk halaman detail
 const locationResponseSchema = z.object({
-  public_id: z.string().uuid(), name: z.string().nullable(), city: z.string().nullable(),
-  state_province: z.string().nullable(), addr_line_1: z.string().nullable(),
-  addr_line_2: z.string().nullable(), is_default: z.boolean(),
+  public_id: z.string().uuid(), 
+  name: z.string().nullable(), 
+  city: z.string().nullable(),
+  state_province: z.string().nullable(), 
+  addr_line_1: z.string().nullable(),
+  addr_line_2: z.string().nullable(), 
+  is_default: z.boolean(),
 });
 const branchResponseSchema = z.object({
-  public_id: z.string().uuid(), name: z.string(), locations: z.array(locationResponseSchema),
+  public_id: z.string().uuid(), 
+  name: z.string(), 
+  locations: z.array(locationResponseSchema),
 });
 const customerDetailResponseSchema = z.object({
-  public_id: z.string().uuid(), name: z.string(), customer_type: z.string(),
+  public_id: z.string().uuid(), 
+  name: z.string(), 
+  customer_type: z.string(),
   branches: z.array(branchResponseSchema),
 });
 

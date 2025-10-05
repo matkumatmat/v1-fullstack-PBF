@@ -3,7 +3,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, load_only
 import uuid
 
 # Impor model yang relevan
@@ -243,3 +243,41 @@ async def get_location_details(db: AsyncSession, location_public_id: uuid.UUID) 
         raise NotFoundException(f"Location with public_id {location_public_id} not found.")
     return location
 
+async def get_all_customers_for_lookup(db: AsyncSession) -> List[Customer]:
+    """
+    Mengambil SEMUA customer beserta hierarki branch & location-nya,
+    tapi HANYA field yang dibutuhkan untuk lookup (id, public_id, name, parent_id).
+    Ini dioptimalkan untuk performa.
+    """
+    query = (
+        select(Customer)
+        .options(
+            # Eager load relasi-relasi yang kita butuhkan
+            selectinload(Customer.branches)
+            .selectinload(Branch.locations),
+            
+            selectinload(Customer.branches)
+            .selectinload(Branch.children)
+            .selectinload(Branch.locations), # Level 2
+            
+            # OPTIMASI: Hanya muat kolom yang kita butuhkan dari database
+            load_only(Customer.id, Customer.public_id, Customer.name),
+            
+            selectinload(Customer.branches).load_only(
+                Branch.id, Branch.public_id, Branch.name, Branch.customer_id, Branch.parent_id
+            ),
+            selectinload(Customer.branches).selectinload(Branch.locations).load_only(
+                Location.id, Location.public_id, Location.name, Location.branch_id, Location.location_type
+            ),
+            selectinload(Customer.branches).selectinload(Branch.children).load_only(
+                Branch.id, Branch.public_id, Branch.name, Branch.customer_id, Branch.parent_id
+            ),
+            selectinload(Customer.branches).selectinload(Branch.children).selectinload(Branch.locations).load_only(
+                Location.id, Location.public_id, Location.name, Location.branch_id
+            )
+        )
+        .order_by(Customer.name)
+    )
+    
+    result = await db.execute(query)
+    return result.scalars().all()

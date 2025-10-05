@@ -2,7 +2,7 @@ from __future__ import annotations
 import uuid
 from typing import List, Optional
 from pydantic import Field
-from app.schema.base import FePlBase, FeResBase
+from app.schema.base import FePlBase, FeResBase, FeResLookup
 from app.models.users import CustomerTypeEnum
 
 class LocationCreate(FePlBase):
@@ -127,4 +127,18 @@ class CustomerWithBranchesResponse(CustomerWithDetailsResponse):
     """SKEMA RESPONSE: Customer lengkap dengan seluruh hierarki branch-nya."""
     branches: List[BranchResponse] = []
 
-    
+class LocationLookup(FeResLookup):
+    """Skema lookup enteng untuk Location. Cuma public_id dan name."""
+    # public_id dan name udah diwarisin dari FeResLookup
+    location_type: Optional[str]
+
+class BranchLookup(FeResLookup):
+    """Skema lookup enteng untuk Branch. Bisa nested."""
+    # public_id dan name udah diwarisin dari FeResLookup
+    locations: List[LocationLookup] = []
+    children: List[BranchLookup] = []
+
+class CustomerLookup(FeResLookup):
+    """Skema lookup enteng untuk Customer. Isinya hierarki branch."""
+    # public_id dan name udah diwarisin dari FeResLookup
+    branches: List[BranchLookup] = []    
