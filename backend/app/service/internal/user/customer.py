@@ -48,6 +48,15 @@ async def _get_branch_by_public_id(db: AsyncSession, public_id: uuid.UUID) -> Br
         raise NotFoundException(f"Branch with public_id {public_id} not found.")
     return branch
 
+async def _get_location_by_public_id(db: AsyncSession, public_id: uuid.UUID) -> Location:
+    """Helper untuk mengambil location berdasarkan public_id, raise error jika tidak ada."""
+    query = select(Location).where(Location.public_id == public_id)
+    result = await db.execute(query)
+    location = result.scalar_one_or_none()
+    if not location:
+        raise NotFoundException(f"Location with public_id {public_id} not found.")
+    return location    
+
 async def _create_branch_hierarchy_recursive(
     db: AsyncSession, 
     branch_data_list: List[BranchNestedCreate], 

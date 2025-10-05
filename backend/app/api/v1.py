@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from .internal import customer as customer_router
+from .internal.packing import packing as packing_router
 
 #from .routers.process import inbound as router_inbound
 #from .routers.process import consignment as router_consignment
@@ -29,6 +30,7 @@ from .internal import customer as customer_router
 
 api_router = APIRouter()
 api_router.include_router(customer_router.router, prefix="/customer")
+api_router.include_router(packing_router.router, prefix="/packing")
 
 #api_router.include_router(router_inbound.router, prefix="/process", tags=["Business Processes"])
 #api_router.include_router(router_consignment.router, prefix="/process/consignment", tags=["Business Processes - Consignment"])

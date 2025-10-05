@@ -1,0 +1,22 @@
+{
+    "manipulated_data" : "object",
+    "content" : {
+        "total_box" : "integer",
+        "packing_slip" : "string",
+        "box_number" : [
+            "id" : "integer",
+            "sscc" : "{1}{8994957}{000011111}{9}", //ini percobaan pembuatan sscc jadikan statis dulu
+            "gtin" : "{1}{8994957}{88888888}", // ini percobaan pembuatan gtin jadikan statis dulu
+            "petugas" : "string",
+            "berat" : "string",
+            "items" [   //ini dalam aturan dalam satu box_number bisa memuat maksimal 6 list dari produk
+                "product" : "string",
+                "batch" : "string",
+                "expire_date" : "string"
+                "quantitiy" : "string",
+                "unit" : "string"
+            ]
+        ]
+
+    }
+}

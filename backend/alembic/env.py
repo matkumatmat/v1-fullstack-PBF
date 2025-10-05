@@ -28,6 +28,8 @@ from app.models.configuration.base import BaseModel
 #    Ini penting agar SQLAlchemy "mendaftarkan" semua tabel Anda ke dalam
 #    metadata BaseModel sebelum Alembic membandingkannya.
 from app.models import *
+from app.models.packing import manifest as packing_manifest_models
+
 # --- [AKHIR BAGIAN 1] ---
 
 
