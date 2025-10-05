@@ -1,91 +1,130 @@
+from __future__ import annotations
 import uuid
-from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr
+from typing import List, Optional
+from pydantic import Field
+from app.schema.base import FePlBase, FeResBase
+from app.models.users import CustomerTypeEnum
 
-from ...base import (
-    FePlBase, FePlUpdate, FeResBase, FeResLookup, DbBase
-)
-from ...type import CustomerTypeFeRes, SectorTypeFeRes
-from app.models.configuration import AddressTypeEnum
-
-class _CustomerAddressCore(BaseModel):
-    """Field-field inti dari sebuah CustomerAddress."""
-    address_name: str = Field(..., max_length=100)
-    address_type: AddressTypeEnum = AddressTypeEnum.CUSTOMER
-    address_line1: str = Field(..., max_length=200)
-    address_line2: Optional[str] = Field(None, max_length=200)
-    city: str = Field(..., max_length=50)
-    state_province: Optional[str] = Field(None, max_length=50)
-    postal_code: Optional[str] = Field(None, max_length=10)
+class LocationCreate(FePlBase):
+    """
+    SKEMA DASAR: Membuat satu Location baru.
+    """
+    name: str = Field(..., max_length=150)
+    location_type: Optional[str] = Field(None, max_length=50)
     country: str = Field("Indonesia", max_length=50)
-    contact_person: Optional[str] = Field(None, max_length=100)
-    contact_phone: Optional[str] = Field(None, max_length=20)
-    contact_email: Optional[EmailStr] = None
-    is_active: bool = True
-    is_default: bool = False
-
-class CustomerAddressFePl(_CustomerAddressCore, FePlBase):
+    state_province: str = Field(..., max_length=50)
+    postal_code: Optional[str] = Field(None, max_length=15)
+    city: str = Field(..., max_length=50)
+    addr_line_1: Optional[str] = Field(..., max_length=200)
+    addr_line_2: Optional[str] = Field(..., max_length=200)
+    addr_line_3: Optional[str] = Field(..., max_length=200)
+    longitude: Optional[float] = Field(None, ge=-180, le=180)
+    latitude: Optional[float] = Field(None, ge=-90, le=90)
+    is_default :bool = False
+    is_active :bool = True
+    location_pic : Optional[str] = Field(..., max_length=20)
+    location_pic_contact : Optional[str] = Field(..., max_length=15)
+    minimal_order_value: Optional[float] = Field(0.0, ge=0)
+    delivery_instructions: Optional[str] = Field(..., max_length=200)
+    
+class BranchNestedCreate(FePlBase):
     """
-    Payload untuk MEMBUAT CustomerAddress.
-    customer_public_id akan diisi oleh service saat membuat Customer secara bersarang.
+    SKEMA DASAR: Membuat satu Branch baru, bisa berisi Location dan anak Branch.
     """
-    pass
+    name: str = Field(..., max_length=150)
+    locations: List[LocationCreate] = Field(default_factory=list, min_items=1, description="Setiap branch baru harus punya minimal satu lokasi.")
+    children: List[BranchNestedCreate] = Field(default_factory=list)
 
-class CustomerAddressFePlUpdate(FePlUpdate):
-    """Payload untuk MENGUBAH CustomerAddress."""
-    address_name: Optional[str] = Field(None, max_length=100)
-    address_type: Optional[AddressTypeEnum] = None
-    address_line1: Optional[str] = Field(None, max_length=200)
-    # ... tambahkan field lain yang bisa di-update ...
-    is_active: Optional[bool] = None
-    is_default: Optional[bool] = None
+class CustomerDetailsCreate(FePlBase):
+    """SKEMA DASAR: Detail finansial Customer. Bagian dari payload input."""
+    npwp: Optional[str] = Field(None, max_length=25)
+    bank: Optional[str] = Field(None, max_length=100)
+    rekening: Optional[str] = Field(None, max_length=50)
 
-class CustomerAddressFeRes(_CustomerAddressCore, FeResBase):
-    """Respons LENGKAP untuk CustomerAddress."""
-    # Tidak ada field tambahan yang spesifik, semua sudah ter-cover.
-    pass
+class CustomerSpecificationCreate(FePlBase):
+    """SKEMA DASAR: Spesifikasi komersial Customer. Bagian dari payload input."""
+    default_credit_limit: float = Field(0.0, ge=0)
+    current_credit_limit: Optional[float] = Field(None, ge=0)
+    default_payment_terms_days: int = Field(30, ge=0)
 
-class CustomerAddressDb(_CustomerAddressCore, DbBase):
-    """Representasi internal lengkap untuk CustomerAddress."""
-    customer_id: int
-
-# ===================================================================
-# SKEMA UNTUK CUSTOMER
-# ===================================================================
-
-class _CustomerCore(BaseModel):
-    """Field-field inti dari sebuah Customer."""
-    code: str = Field(..., max_length=20)
+class CustomerOnboard(FePlBase):
+    """
+    PAYLOAD untuk endpoint `POST /customers/onboard`
+    """
     name: str = Field(..., max_length=100)
+    customer_type: CustomerTypeEnum
+    details: CustomerDetailsCreate
+    specification: CustomerSpecificationCreate
+    branches: List[BranchNestedCreate] = Field(default_factory=list)
 
-class CustomerFePl(_CustomerCore, FePlBase):
-    """Payload untuk MEMBUAT Customer baru, bisa termasuk alamatnya."""
-    customer_type_public_id: uuid.UUID
-    sector_type_public_id: uuid.UUID
-    # Memungkinkan pembuatan alamat secara bersamaan
-    addresses: List[CustomerAddressFePl] = []
+class BranchCreateForExistingCustomer(FePlBase):
+    """
+    PAYLOAD untuk endpoint `POST /customers/{customer_public_id}/branches`
+    Mewarisi FePlBase.
+    """
+    branch_data: BranchNestedCreate
 
-class CustomerFePlUpdate(FePlUpdate):
-    """Payload untuk MENGUBAH Customer."""
-    code: Optional[str] = Field(None, max_length=20)
-    name: Optional[str] = Field(None, max_length=100)
-    customer_type_public_id: Optional[uuid.UUID] = None
-    sector_type_public_id: Optional[uuid.UUID] = None
+class CustomerCreateSimple(FePlBase):
+    """
+    PAYLOAD untuk endpoint `POST /customers`
+    Mewarisi FePlBase.
+    """
+    name: str = Field(..., max_length=100)
+    customer_type: CustomerTypeEnum
+    details: CustomerDetailsCreate
+    specification: CustomerSpecificationCreate
 
-class CustomerFeRes(_CustomerCore, FeResBase):
-    """Respons LENGKAP untuk Customer, termasuk relasinya."""
-    customer_type: CustomerTypeFeRes
-    sector_type: SectorTypeFeRes
-    addresses: List[CustomerAddressFeRes] = []
-    # allocations: List['AllocationFeResSummary'] = [] # Bisa ditambahkan nanti
+# =============================================================================
+# BLOCK 3: SKEMA RESPONSE (OUTPUT DARI API)
+# FeResBase sudah punya public_id, created_at, updated_at, dan config from_attributes.
+# =============================================================================
 
-class CustomerFeResLookup(FeResLookup):
-    """Respons RAMPING untuk lookup Customer."""
-    code: str
+class LocationResponse(FeResBase):
+    """
+    Mewarisi FeResBase untuk mendapatkan public_id, timestamps, dan ORM mode.
+    """
+    name: Optional[str]
+    location_type: Optional[str]
+    country: Optional[str]
+    state_province:Optional[str]
+    postal_code:Optional[str]
+    city: Optional[str]
+    addr_line_1: Optional[str]
+    addr_line_2: Optional[str]
+    addr_line_3: Optional[str]
+    longitude: Optional[float]
+    latitude: Optional[float]
+    is_default : bool
+    is_active :bool
+    location_pic: Optional[str]
+    location_pic_contact:Optional[str]
+    minimal_order_value : Optional[float]
+    delivery_instructions: Optional[str]
 
-class CustomerDb(_CustomerCore, DbBase):
-    """Representasi internal lengkap untuk Customer."""
-    customer_type_id: int
-    sector_type_id: int
-    addresses: List[CustomerAddressDb] = []
-    # allocations: List['AllocationDb'] = []
+class BranchResponse(FeResBase):
+    """
+    SKEMA RESPONSE: Data satu Branch, bisa nested.
+    """
+    name: str
+    # parent_public_id perlu diisi manual di service layer jika dibutuhkan
+    locations: List[LocationResponse] = []
+    children: List[BranchResponse] = []
+
+class CustomerResponse(FeResBase):
+    """
+    SKEMA RESPONSE: Data dasar Customer.
+    Mewarisi FeResBase.
+    """
+    name: str
+    customer_type: CustomerTypeEnum
+
+class CustomerWithDetailsResponse(CustomerResponse):
+    """SKEMA RESPONSE: Customer dengan detail finansial & spesifikasi."""
+    details: CustomerDetailsCreate # Bisa bikin response schema terpisah jika perlu
+    specification: CustomerSpecificationCreate # Bisa bikin response schema terpisah jika perlu
+
+class CustomerWithBranchesResponse(CustomerWithDetailsResponse):
+    """SKEMA RESPONSE: Customer lengkap dengan seluruh hierarki branch-nya."""
+    branches: List[BranchResponse] = []
+
+    

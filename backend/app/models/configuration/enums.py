@@ -59,10 +59,6 @@ class SectorTypeEnum(str, enum.Enum):
     SWASTA = "SWASTA"    
     PEMERINTAH = "P2M"
 
-class CustomerTypeEnum(str, enum.Enum)    :
-    PEMERINTAH ="PEMERINTAH"
-    DISTRIBUTOR = "DISTRIBUTOR"
-    RETAIL = "RETAIL"
 
 class ProductPriceEnum(str, enum.Enum)    :
     HJP = "HJP"

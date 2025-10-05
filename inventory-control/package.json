@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port 8000",
-    "build": "next build --turbopack",
+    "dev": "next dev  --port 8000",
+    "build": "next build ",
     "start": "next start",
     "lint": "eslint"
   },
@@ -91,6 +91,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^9.3.0",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@types/node": "22.10.2",
     "@types/react": "19.0.1",
     "@types/react-dom": "19.0.2",

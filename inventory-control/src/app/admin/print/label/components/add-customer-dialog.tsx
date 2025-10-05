@@ -1,4 +1,3 @@
-// app/main/labeling/components/add-customer-dialog.tsx
 'use client';
 
 import { useState } from 'react';
@@ -12,19 +11,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { PlusCircle } from 'lucide-react';
-import { CustomerForm } from './customer-form';
-import {CustomerFormValues} from '@/constants/customer'
+import { CustomerOnboardForm } from './customer-onboard-form'; // Impor form baru kita
 
 export function AddCustomerDialog() {
   const [open, setOpen] = useState(false);
-
-  const handleFormSubmit = (data: CustomerFormValues) => {
-    // Logika untuk mengirim data ke backend akan ada di sini
-    // menggunakan useMutation dari TanStack Query.
-    
-    // Untuk sekarang, kita tutup dialog setelah submit.
-    setOpen(false);
-  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -34,16 +24,17 @@ export function AddCustomerDialog() {
           Tambah Customer
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Tambah Customer Baru</DialogTitle>
+          <DialogTitle>Onboarding Customer Baru</DialogTitle>
           <DialogDescription>
-            Isi detail customer dan alamat pengiriman. Klik simpan jika sudah selesai.
+            Isi detail lengkap customer, termasuk informasi finansial dan cabang. Klik simpan jika sudah selesai.
           </DialogDescription>
         </DialogHeader>
-            <div className="w-full flex justify-center">
-                <CustomerForm onFormSubmit={handleFormSubmit} />
-            </div>
+        <div className="py-4">
+          {/* Gunakan form baru dan berikan callback untuk menutup dialog */}
+          <CustomerOnboardForm onSuccess={() => setOpen(false)} />
+        </div>
       </DialogContent>
     </Dialog>
   );

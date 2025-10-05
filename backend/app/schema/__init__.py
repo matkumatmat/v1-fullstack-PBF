@@ -1,22 +1,5 @@
 from .base import *
-from .type import (
-    allocation_type, customer_type, delivery_type, document_type,
-    movement_type, notification_type, package_type, packaging_material,
-    product_price, product_type, sector_type, status_type, temperature_type
-)
 
-from .internal.product.product import (
-    _ProductCore, ProductFePl, ProductFePlUpdate,
-    ProductFeRes, ProductFeResLookup, ProductDb
-)
-from .internal.product.batch import (
-    _BatchCore, BatchFePl, BatchFePlUpdate,
-    BatchFeRes, BatchDb, BatchSummary,
-)
-from .internal.product.allocation import (
-    _AllocationCore, AllocationFePl, AllocationFePlUpdate,
-    AllocationFeRes, AllocationDb
-)
 
 
 
@@ -50,12 +33,12 @@ def _rebuild_models_with_namespace():
     # Hanya daftarkan skema yang menggunakan Forward References (string literals).
     # Biasanya ini adalah skema Read (...FeRes) dan skema Internal (...Db).
     models_to_rebuild = [
-        ProductFeRes,
-        ProductDb,
-        BatchFeRes,
-        BatchDb,
-        AllocationFeRes,
-        AllocationDb,
+        # ProductFeRes,
+        # ProductDb,
+        # BatchFeRes,
+        # BatchDb,
+        # AllocationFeRes,
+        # AllocationDb,
         
         # yang memiliki relasi bersarang dengan forward reference.
         # Contoh:

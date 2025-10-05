@@ -10,27 +10,16 @@ from .enums import PackagingEnum
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..product import Product
     from ..users import Customer  
- 
-class SectorType(BaseModel):
-    __tablename__ = 'sector_types'
-    sector_type: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text)
-    default_payment_terms: Mapped[Optional[int]] = mapped_column(Integer)
-    default_delivery_terms: Mapped[Optional[str]] = mapped_column(String(50))
-    customers: Mapped[List['Customer']] = relationship(back_populates='sector_type')
-    def __repr__(self) -> str:
-        return f'<SectorType code="{self.code}" name="{self.name}">'
         
-class CustomerType(BaseModel):
-    __tablename__ = 'customer_types'
-    customer_type: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    default_credit_limit: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
-    default_payment_terms_days: Mapped[Optional[int]] = mapped_column(Integer, default=30)
-    customers: Mapped[List['Customer']] = relationship(back_populates='customer_type')
-    def __repr__(self) -> str:
-        return f'<CustomerType code="{self.code}" name="{self.name}">'
+# class CustomerType(BaseModel):
+#     __tablename__ = 'customer_types'
+#     customer_type: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+#     default_credit_limit: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
+#     default_payment_terms_days: Mapped[Optional[int]] = mapped_column(Integer, default=30)
+#     customers: Mapped[List['Customer']] = relationship(back_populates='customer_type')
+#     def __repr__(self) -> str:
+#         return f'<CustomerType code="{self.code}" name="{self.name}">'
 
 class DocumentType(BaseModel):
     __tablename__ = 'document_types'
@@ -43,19 +32,31 @@ class DocumentType(BaseModel):
     def __repr__(self) -> str:
         return f'<DocumentType code="{self.code}" name="{self.name}">'
 
+# file: app/models/configuration/type.py
+
 class StatusType(BaseModel):
     __tablename__ = 'status_types'
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    
+    # ✅✅✅ TAMBAHIN DUA KOLOM INI, ANJING ✅✅✅
+    entity_type: Mapped[str] = mapped_column(String(50), nullable=False, comment="Contoh: SalesOrder, Customer, Product")
+    code: Mapped[str] = mapped_column(String(50), nullable=False, comment="Contoh: PENDING, ACTIVE, SHIPPED")
+    
+    # KOLOM-KOLOM LO YANG LAIN TETAP DI SINI
+    name: Mapped[str] = mapped_column(String(50), nullable=False, comment="Contoh: Menunggu Pembayaran, Aktif, Telah Dikirim")
     description: Mapped[Optional[str]] = mapped_column(Text)
     color_code: Mapped[Optional[str]] = mapped_column(String(7))
     icon: Mapped[Optional[str]] = mapped_column(String(50))
     css_class: Mapped[Optional[str]] = mapped_column(String(50))
     requires_approval: Mapped[bool] = mapped_column(Boolean, default=False)
     sends_notification: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    # SEKARANG PERINTAH INI JADI MASUK AKAL KARENA KOLOMNYA ADA
     __table_args__ = (UniqueConstraint('entity_type', 'code', name='uq_status_entity_code'),)
+    
     def __repr__(self) -> str:
+        # DAN INI JUGA JADI BISA JALAN
         return f'<StatusType {self.entity_type}.{self.code}: {self.name}>'
-
+    
 class PackagingMaterial(BaseModel):
     __tablename__ = 'packaging_materials'
     name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)

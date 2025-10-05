@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from .internal import customer as customer_router
 
 #from .routers.process import inbound as router_inbound
 #from .routers.process import consignment as router_consignment
@@ -27,6 +28,7 @@ from fastapi import APIRouter
 #from .routers.type import temperature_type as router_temperature_type
 
 api_router = APIRouter()
+api_router.include_router(customer_router.router, prefix="/customer")
 
 #api_router.include_router(router_inbound.router, prefix="/process", tags=["Business Processes"])
 #api_router.include_router(router_consignment.router, prefix="/process/consignment", tags=["Business Processes - Consignment"])

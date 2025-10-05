@@ -20,6 +20,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # 2. Impor BaseModel Anda.
 #    Ini adalah objek pusat yang berisi `metadata` dari SEMUA model Anda.
+from app.database.database import Base
+from app.models.users import customer  # Cukup impor file-nya
 from app.models.configuration.base import BaseModel
 
 # 3. Impor semua modul model Anda.

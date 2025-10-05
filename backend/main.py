@@ -31,6 +31,7 @@ from app.api.v1 import api_router
 origins = [
     "http://localhost",
     "http://localhost:8000",
+    "http://localhost:3000",
     "http://127.0.0.1:8000",
 ]
 

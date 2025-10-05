@@ -1,12 +1,11 @@
-import Providers from '@/components/layout/providers';
-import { Toaster } from '@/components/ui/sonner';
+// src/app/layout.tsx (Versi Final yang Disederhanakan)
+
 import { fontVariables } from '@/lib/font';
-import ThemeProvider from '@/components/layout/ThemeToggle/theme-provider';
 import { cn } from '@/lib/utils';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
 import NextTopLoader from 'nextjs-toploader';
-import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import Providers from '@/components/providers'; // <-- Impor provider komposit kita
 import './globals.css';
 import './theme.css';
 
@@ -57,20 +56,10 @@ export default async function RootLayout({
         )}
       >
         <NextTopLoader showSpinner={false} />
-        <NuqsAdapter>
-          <ThemeProvider
-            attribute='class'
-            defaultTheme='system'
-            enableSystem
-            disableTransitionOnChange
-            enableColorScheme
-          >
-            <Providers activeThemeValue={activeThemeValue as string}>
-              <Toaster />
-              {children}
-            </Providers>
-          </ThemeProvider>
-        </NuqsAdapter>
+        {/* Cukup panggil satu komponen Providers di sini */}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
