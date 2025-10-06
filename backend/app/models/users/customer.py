@@ -3,10 +3,12 @@ from sqlalchemy import (
     String, ForeignKey, Text, Boolean, Numeric, Enum as SQLAlchemyEnum, Integer, 
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 import enum
 
 from ..configuration import BaseModel
+if TYPE_CHECKING:
+    from app.models.packing.manifest import PackingManifest
 
 class CustomerTypeEnum(str, enum.Enum)    :
     PEMERINTAH ="PEMERINTAH"
@@ -87,7 +89,9 @@ class Location(BaseModel):
     location_pic:Mapped[str]=mapped_column(String(20))
     location_pic_contact: Mapped[str]=mapped_column(String(15))
     minimal_order_value: Mapped[Optional[float]] = mapped_column(Numeric(15, 2))
-    delivery_instructions: Mapped[Optional[str]] = mapped_column(Text)    
+    delivery_instructions: Mapped[Optional[str]] = mapped_column(Text)  
+    packing_manifests: Mapped[List[PackingManifest]] = relationship(back_populates="location")
+    
 
 
 

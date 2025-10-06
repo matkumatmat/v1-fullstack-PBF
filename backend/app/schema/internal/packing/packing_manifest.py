@@ -60,3 +60,27 @@ class PackingManifestResponse(FeResBase):
     packing_slip: Optional[str]
     total_boxes: int
     packed_boxes: List[PackedBoxResponse]
+
+class LabelAddressData(BaseModel):
+    """Struktur data alamat yang sudah diolah untuk label."""
+    line_1: str
+    line_2: Optional[str] = None
+    line_3: Optional[str] = None
+    province: str
+    city: str
+    pic_contact: str
+
+class LabelDataResponse(FeResBase):
+    """
+    Response lengkap berisi semua data yang dibutuhkan untuk mencetak satu set label
+    dari sebuah manifest.
+    """
+    manifest_public_id: uuid.UUID
+    packing_slip: Optional[str]
+    tujuan_kirim: str
+    
+    # Alamat pengirim yang sudah diolah
+    shipping_address: LabelAddressData
+    
+    # Data kotak-kotak yang akan dicetak (kita bisa pake ulang skema yang ada)
+    packed_boxes: List[PackedBoxResponse]    

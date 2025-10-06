@@ -4,23 +4,28 @@ from __future__ import annotations
 from sqlalchemy import (
     String, ForeignKey, Integer, Text
 )
+import uuid
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
 
 from ..configuration import BaseModel
-from ..users.customer import Location
+if TYPE_CHECKING:
+    from ..users.customer import Location
 
 class PackingManifest(BaseModel):
     __tablename__ = 'packing_manifests'
     
     location_id: Mapped[int] = mapped_column(ForeignKey('locations.id'), nullable=False)
-    tujuan_kirim: Mapped[str] = mapped_column(String(255))
+    shipping_to_location_public_id: uuid.UUID # Lokasi TUJUAN
     packing_slip: Mapped[Optional[str]] = mapped_column(String(50), index=True)
     total_boxes: Mapped[int] = mapped_column(Integer)
     shipping_address_details: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB)
+    shipping_to_location_id: Mapped[int] = mapped_column(ForeignKey('locations.id'), nullable=False)
     
-    location: Mapped[Location] = relationship()
+    
+    location: Mapped[Location] = relationship(foreign_keys=[location_id])
+    shipping_to_location: Mapped[Location] = relationship(foreign_keys=[shipping_to_location_id])
     packed_boxes: Mapped[List[PackedBox]] = relationship(
         back_populates='manifest', cascade='all, delete-orphan'
     )
